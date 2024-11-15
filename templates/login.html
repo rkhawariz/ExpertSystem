@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='logo-mentah.ico') }}"
+      type="image/x-icon"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Font Awesome icons (free version)-->
+    <script
+      src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link
+      href="{{ url_for('static', filename='style.css') }}"
+      rel="stylesheet"
+    />
+    <!-- <link rel="stylesheet" href="../static/style.css"> -->
+    <title>LambungHealth+ | Login</title>
+  </head>
+  <script>
+    function toggleNavbar() {
+      let target = $("#navbarBasicExample");
+      $(".navbar-burger").toggleClass("is-active");
+      target.toggleClass("is-active");
+    }
+  </script>
+
+  <body>
+    {% include 'navbar.html' %}
+    <section class="container reg-form">
+      <div class="columns is-multiline">
+        <div class="column is-8 is-offset-2 register">
+          <div class="columns">
+            <div class="column left">
+              <img src="../static/logo.png" alt="" class="title is-4" />
+              <h2 class="subtitle colored is-4">
+                Deteksi Cepat, Lambung Sehat.
+              </h2>
+              <p>Login mudah cukup menggunakan e-mail</p>
+            </div>
+            <div class="column right has-text-centered">
+              <h1 class="title is-4">Login sekarang!</h1>
+              <p class="description pb-2">
+                Login dan nikmati fitur penuh website kami!
+              </p>
+
+              <div class="field">
+                <div class="control">
+                  <input
+                    class="input is-medium is-input-reg"
+                    type="email"
+                    placeholder="Email"
+                    id="email"
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="control">
+                  <input
+                    class="input is-medium is-input-reg"
+                    type="password"
+                    placeholder="Password"
+                    id="password"
+                  />
+                </div>
+              </div>
+              <button
+                class="button is-block is-fullwidth is-medium is-btn-regis"
+                onclick="sign_in()"
+              >
+                Login
+              </button>
+              <br />
+              <small
+                ><em>Belum punya akun?</em
+                ><em><a href="/register"> Register</a></em></small
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script>
+      window.addEventListener("scroll", function () {
+          const navbar = document.querySelector(".navbar");
+          if (window.scrollY > 50) {
+              navbar.classList.add("navbar-scroll");
+          } else {
+              navbar.classList.remove("navbar-scroll");
+          }
+      });
+  </script>
+  </body>
+</html>

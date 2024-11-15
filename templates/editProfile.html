@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <!-- Custom styles for this page -->
+    <link
+      href="../static/vendor/datatables/dataTables.bootstrap4.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <title>Riwayat Diagnosa - LambungHealth+</title>
+  </head>
+  <body>
+    {% extends 'layoutDashboard.html' %} {% block content %}
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800 text-center">Edit Profile</h1>
+    <p class="mb-4 text-center">
+      Perbarui Profil Anda untuk Menyesuaikan Informasi dan Pengaturan Akun.
+    </p>
+
+    <!-- Edit Profile Start -->
+    <div class="container mt-5 mb-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card">
+            <img
+              src="../static/img/undraw_profile.svg"
+              class="card-img-top rounded-circle mx-auto mt-3"
+              alt="Profile Image"
+              style="width: 150px; height: 150px; object-fit: cover"
+            />
+            <div class="card-body text-center">
+              <!-- Profile Info -->
+              <div class="mb-3 mt-1" style="text-align: start">
+                <label for="editUserName">Nama</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="formEditUserName"
+                  value="{{ user_info.name }}"
+                  readonly
+                />
+                <div class="mb-3 mt-3">
+                  <label for="email">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="formEditEmail"
+                    value="{{ user_info.email }}"
+                    readonly
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="password">Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    value="********"
+                    readonly
+                  />
+                </div>
+                <!-- Edit Button -->
+              <button
+              style="background-color: #40513b; color: #fff"
+              type="button"
+              class="btn"
+              data-toggle="modal"
+              data-target="#editModal"
+            >
+              Edit
+            </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Modal -->
+      <div
+        class="modal fade"
+        id="editModal"
+        tabindex="-1"
+        aria-labelledby="editModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editModalLabel">
+                Edit Admin Profile
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <!-- Form for Editing -->
+              <form
+                method="POST"
+                action="/profile_User"
+                enctype="multipart/form-data"
+              >
+                <div class="mb-3">
+                  <label for="editNama">Nama</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="editNama"
+                    name="nama"
+                    value="{{ user_info.name }}"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="editEmail">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="editEmail"
+                    name="email"
+                    value="{{ user_info.email }}"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="editPassword">New Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="editPassword"
+                    name="password"
+                    placeholder="New Password"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  onclick="saveChanges()"
+                >
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+  </body>
+</html>

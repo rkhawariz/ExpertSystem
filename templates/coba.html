@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<style>
+  body {
+    margin: 0;
+  }
+
+  .title {
+    font-size: 7rem;
+    color: #fff;
+  }
+
+  section {
+    font-size: 2rem;
+    padding: 2rem;
+    background-color: brown;
+  }
+
+  .myWrapper {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    perspective: 10px;
+  }
+
+  header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    transform-style: preserve-3d;
+    z-index: -1;
+  }
+
+  .backgound,
+   .foreground {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    z-index: -1;
+  }
+</style>
+<body>
+  <div class="myWrapper">
+    <header>
+      <img class="background" src="../static/img/bg-nav.jpg" alt="">
+      <img class="foreground" src="../static/img/foreground.png" alt="">
+      <h2 class="title">Welcome!</h2>
+    </header>
+    <section>
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestias facere sit maiores explicabo atque nulla, fugiat deserunt debitis officiis fuga, tempore tempora dolorum earum iusto voluptas sequi veniam, voluptatum accusamus ullam! Enim ipsum obcaecati quasi sapiente odio expedita sit debitis. Adipisci nostrum repudiandae sequi, natus quod cupiditate ex expedita eaque! Similique molestias earum sint, incidunt neque eius odio debitis aut. Blanditiis veniam corporis facere sed, harum soluta laboriosam? Suscipit praesentium temporibus ipsum beatae similique non. Animi repellat eligendi reiciendis in cumque error incidunt nam necessitatibus quidem porro eos, est sapiente?
+    </section>
+  </div>
+</body>
+</html>
