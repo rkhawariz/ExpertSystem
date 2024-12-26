@@ -169,8 +169,8 @@ def berandaAdmin():
         msg = 'There was a problem logging you in'
     return render_template('berandaAdmin.html', msg=msg)
 
-@app.route('/riwayatDiagnosa')
-def riwayatDiagnosa():
+@app.route('/kelolaDiagnosa')
+def kelolaDiagnosa():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
         payload =jwt.decode(
@@ -181,12 +181,107 @@ def riwayatDiagnosa():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('riwayatDiagnosa.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+        return render_template('kelolaPenyakit.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-    return render_template('riwayatDiagnosa.html', msg=msg)
+    return render_template('kelolaPenyakit.html', msg=msg)
+
+@app.route('/kelolaPenyakit')
+def kelolaPenyakit():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('kelolaPenyakit.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('kelolaPenyakit.html', msg=msg)
+
+@app.route('/kelolaGejala')
+def kelolaGejala():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('kelolaGejala.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('kelolaGejala.html', msg=msg)
+
+@app.route('/kelolaAnjuran')
+def kelolaAnjuran():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('kelolaAnjuran.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('kelolaAnjuran.html', msg=msg)
+
+@app.route('/kelolaPengetahuan')
+def kelolaPengetahuan():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('kelolaPengetahuan.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('kelolaPengetahuan.html', msg=msg)
+
+@app.route('/kelolaUser')
+def kelolaUser():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('kelolaUser.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('kelolaUser.html', msg=msg)
 
 @app.route('/editProfile')
 def editProfile():
