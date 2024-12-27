@@ -1,13 +1,14 @@
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, url_for
+from flask import Flask, render_template, request, jsonify, url_for, redirect
 
 from datetime import datetime, timedelta
 from bson import ObjectId
 import hashlib
 import jwt
 import requests
+from bson.objectid import ObjectId
 
 from pymongo import MongoClient
 import requests
@@ -149,6 +150,25 @@ def about():
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('about.html', msg=msg)
+
+@app.route('/diagnosaStart')
+def diagnosaStart():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('diagnosaStart.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('diagnosaStart.html', msg=msg)
   
 @app.route('/berandaAdmin')
 def berandaAdmin():
@@ -181,12 +201,12 @@ def kelolaDiagnosa():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaPenyakit.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+        return render_template('kelolaDiagnosa.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-    return render_template('kelolaPenyakit.html', msg=msg)
+    return render_template('kelolaDiagnosa.html', msg=msg)
 
 @app.route('/kelolaPenyakit')
 def kelolaPenyakit():
@@ -207,11 +227,11 @@ def kelolaPenyakit():
         msg = 'There was a problem logging you in'
     return render_template('kelolaPenyakit.html', msg=msg)
 
-@app.route('/kelolaGejala')
+@app.route('/kelolaGejala', methods=['GET', 'POST'])
 def kelolaGejala():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
+        payload = jwt.decode(
             token_receive,
             SECRET_KEY,
             algorithms=['HS256']
@@ -219,12 +239,95 @@ def kelolaGejala():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaGejala.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+
+        # Jika metode GET, kembalikan halaman dengan data gejala
+        if request.method == 'GET':
+            if not is_admin:
+                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+            gejala = list(db.gejala.find().sort("kode_gejala", -1))
+            kode_gejala_terakhir = gejala[0]["kode_gejala"] if gejala else "G00"
+            kode_gejala_baru = f"G{int(kode_gejala_terakhir[1:]) + 1:02d}"
+            return render_template(
+                'kelolaGejala.html',
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+                kode_gejala_baru=kode_gejala_baru,
+                gejala=gejala
+            )
+
+        elif request.method == 'POST':
+            if not is_admin:
+                return jsonify({"message": "Unauthorized"}), 403
+            data = request.json
+
+            # Ambil kode gejala terakhir, lalu buat kode baru
+            last_gejala = db.gejala.find_one(sort=[("kode_gejala", -1)])
+            if last_gejala:
+                last_code = int(last_gejala["kode_gejala"][1:])  # Ambil angka setelah "G"
+                new_code = f"G{last_code + 1:02d}"  # Format menjadi G01, G02, dst.
+            else:
+                new_code = "G01"  # Jika belum ada data, mulai dari G01.
+
+            new_gejala = {
+                "kode_gejala": new_code,
+                "gejala": data['gejala']
+            }
+            db.gejala.insert_one(new_gejala)
+            return jsonify({"message": "Data gejala berhasil ditambahkan.", "kode_gejala": new_code}), 201
+
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-    return render_template('kelolaGejala.html', msg=msg)
+    return render_template('kelolaGejala.html', msg=msg)    
+
+@app.route('/kelolaGejalaSave', methods=['POST'])
+def tambahGejalaSave():
+    data = request.get_json()
+    if not data or "gejala" not in data or not data["gejala"]:
+        return jsonify({"message": "Data gejala tidak valid."}), 400
+
+    # Menambahkan data ke database
+    try:
+        kode_gejala = data["kode_gejala"]
+        gejala = data["gejala"]
+
+        db.gejala.insert_one({"kode_gejala": kode_gejala, "gejala": gejala})
+        return jsonify({"message": "Data gejala berhasil disimpan."}), 200
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+
+@app.route('/delete_gejala/<id>', methods=['DELETE'])
+def delete_gejala(id):
+    try:
+        db.gejala.delete_one({"_id": ObjectId(id)})
+        return jsonify({"message": "berhasil"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/kelolaGejalaEdit', methods=['PUT'])
+def kelolaGejalaEdit():
+    try:
+        data = request.get_json()
+        kode_gejala = data.get('kode_gejala', '').strip()
+        gejala = data.get('gejala', '').strip()
+
+        if not kode_gejala or not gejala:
+            return jsonify({"message": "Kode gejala dan gejala tidak boleh kosong"}), 400
+
+        result = db.gejala.update_one(
+            {"kode_gejala": kode_gejala},
+            {"$set": {"gejala": gejala}}
+        )
+
+        if result.matched_count > 0:
+            return jsonify({"message": "Data berhasil diperbarui"}), 200
+        else:
+            return jsonify({"message": "Kode gejala tidak ditemukan"}), 404
+
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
 
 @app.route('/kelolaAnjuran')
 def kelolaAnjuran():
@@ -268,20 +371,39 @@ def kelolaPengetahuan():
 def kelolaUser():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
-            token_receive,
-            SECRET_KEY,
-            algorithms=['HS256']
-        )
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaUser.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+        if is_admin:
+            users = db.users.find()
+            user_list = []
+
+            for user in users:
+                user_lists = {
+                    "id": str(user["_id"]),
+                    "nama": user["name"],
+                    "usia": user["age"],
+                    "jenisKelamin": user["gender"],
+                    "email": user["email"],
+                    'kategori': user['category'],
+                }
+                user_list.append(user_lists)
+
+            return render_template(
+                "kelolaUser.html",
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+                users=user_list,
+            )
+        else:
+            return render_template("login.html")
     except jwt.ExpiredSignatureError:
-        msg = 'Your token has expired'
+        msg = "Your token has expired"
     except jwt.exceptions.DecodeError:
-        msg = 'There was a problem logging you in'
-    return render_template('kelolaUser.html', msg=msg)
+        msg = "There was a problem logging you in"
+    return render_template("login.html", msg=msg)
 
 @app.route('/editProfile')
 def editProfile():
