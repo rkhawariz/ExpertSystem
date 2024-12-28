@@ -367,7 +367,7 @@ def kelolaPengetahuan():
         msg = 'There was a problem logging you in'
     return render_template('kelolaPengetahuan.html', msg=msg)
 
-@app.route('/kelolaUser')
+@app.route('/kelolaUser', methods=['GET'])
 def kelolaUser():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
@@ -405,6 +405,95 @@ def kelolaUser():
         msg = "There was a problem logging you in"
     return render_template("login.html", msg=msg)
 
+@app.route('/kelolaUserSave', methods=['POST'])
+def kelolaUserSave():
+    try:
+        data = request.get_json()
+
+        nama = data.get("nama")
+        usia = data.get("usia")
+        jenis_kelamin = data.get("jenisKelamin")
+        email = data.get("email")
+        kategori = data.get("kategori")
+
+        user_data = {
+            "name": nama,
+            "age": usia,
+            "gender": jenis_kelamin,
+            "email": email,
+            "category": kategori
+        }
+        result = db.users.insert_one(user_data)
+
+        # Mengembalikan response sukses
+        return jsonify({
+            "message": "Data pengguna berhasil ditambahkan.",
+            "id": str(result.inserted_id)
+        }), 201
+
+    except Exception as e:
+        # Menangani error dan mengembalikan pesan error
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+
+@app.route('/kelolaUserDelete/<id>', methods=['DELETE'])
+def kelolaUserDelete(id):
+    try:
+        object_id = ObjectId(id)
+        
+        result = db.users.delete_one({"_id": object_id})
+        
+        if result.deleted_count > 0:
+            return jsonify({"message": "Data berhasil dihapus"}), 200
+        else:
+            return jsonify({"message": "Data tidak ditemukan"}), 404
+
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+    
+@app.route('/updateUser/<user_id>', methods=['PUT'])
+def updateUser(user_id):
+    try:
+        # Log untuk debug
+        print(f"User ID yang diterima: {user_id}")
+        data = request.get_json()
+        print(f"Data yang diterima: {data}")
+
+        if not data:
+            return jsonify({"message": "Data tidak valid."}), 400
+
+        updated_data = {
+            "name": data.get("nama"),
+            "age": data.get("usia"),
+            "gender": data.get("jenisKelamin"),
+            "category": data.get("kategori"),
+            "email": data.get("email"),
+        }
+
+        if "password" in data and data["password"]:
+            password = data["password"]
+            password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+            updated_data["password"] = password_hash
+
+        # Cek apakah user_id valid
+        try:
+            user_object_id = ObjectId(user_id)
+        except Exception as e:
+            return jsonify({"message": "User ID tidak valid."}), 400
+
+        # Update data pengguna di database
+        result = db.users.update_one({"_id": user_object_id}, {"$set": updated_data})
+
+        # Cek apakah data ditemukan dan diupdate
+        if result.matched_count == 0:
+            return jsonify({"message": "Pengguna tidak ditemukan."}), 404
+
+        return jsonify({"message": "Data pengguna berhasil diperbarui."}), 200
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+
+    
 @app.route('/editProfile')
 def editProfile():
     token_receive = request.cookies.get(TOKEN_KEY)
