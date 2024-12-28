@@ -208,11 +208,11 @@ def kelolaDiagnosa():
         msg = 'There was a problem logging you in'
     return render_template('kelolaDiagnosa.html', msg=msg)
 
-@app.route('/kelolaPenyakit')
+@app.route('/kelolaPenyakit', methods=['GET'])
 def kelolaPenyakit():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
+        payload = jwt.decode(
             token_receive,
             SECRET_KEY,
             algorithms=['HS256']
@@ -220,14 +220,77 @@ def kelolaPenyakit():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaPenyakit.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+
+        if request.method == 'GET':
+            if not is_admin:
+                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+            penyakit = list(db.penyakit.find().sort("kode_penyakit", -1))
+            kode_penyakit_terakhir = penyakit[0]["kode_penyakit"] if penyakit else "P00"
+            kode_penyakit_baru = f"P{int(kode_penyakit_terakhir[1:]) + 1:02d}"
+            return render_template(
+                'kelolapenyakit.html',
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+                kode_penyakit_baru=kode_penyakit_baru,
+                penyakit=penyakit
+            )
+
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-    return render_template('kelolaPenyakit.html', msg=msg)
+    return render_template('kelolaGejala.html', msg=msg)
 
-@app.route('/kelolaGejala', methods=['GET', 'POST'])
+@app.route('/kelolaPenyakitSave', methods=['POST'])
+def tambahPenyakitSave():
+    data = request.get_json()
+    if not data or "penyakit" not in data or not data["penyakit"]:
+        return jsonify({"message": "Data penyakit tidak valid."}), 400
+
+    try:
+        kode_penyakit = data["kode_penyakit"]
+        penyakit = data["penyakit"]
+        definisi = data["definisi"]
+
+        db.penyakit.insert_one({"kode_penyakit": kode_penyakit, "penyakit": penyakit, "definisi": definisi})
+        return jsonify({"message": "Data penyakit berhasil disimpan."}), 200
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+    
+@app.route('/delete_penyakit/<id>', methods=['DELETE'])
+def delete_penyakit(id):
+    try:
+        db.penyakit.delete_one({"_id": ObjectId(id)})
+        return jsonify({"message": "berhasil"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/kelolaPenyakitEdit', methods=['PUT'])
+def kelolaPenyakitEdit():
+    try:
+        data = request.get_json()
+        kode_penyakit = data.get('kode_penyakit', '').strip()
+        penyakit = data.get('penyakit', '').strip()
+        definisi = data.get('definisi', '').strip()
+
+        if not kode_penyakit or not penyakit:
+            return jsonify({"message": "Kode penyakit dan nama penyakit tidak boleh kosong"}), 400
+
+        result = db.penyakit.update_one(
+            {"kode_penyakit": kode_penyakit},
+            {"$set": {"penyakit": penyakit, "definisi": definisi}}
+        )
+
+        if result.matched_count > 0:
+            return jsonify({"message": "Data berhasil diperbarui"}), 200
+        else:
+            return jsonify({"message": "Kode penyakit tidak ditemukan"}), 404
+
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+
+@app.route('/kelolaGejala', methods=['GET'])
 def kelolaGejala():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
@@ -255,26 +318,6 @@ def kelolaGejala():
                 kode_gejala_baru=kode_gejala_baru,
                 gejala=gejala
             )
-
-        elif request.method == 'POST':
-            if not is_admin:
-                return jsonify({"message": "Unauthorized"}), 403
-            data = request.json
-
-            # Ambil kode gejala terakhir, lalu buat kode baru
-            last_gejala = db.gejala.find_one(sort=[("kode_gejala", -1)])
-            if last_gejala:
-                last_code = int(last_gejala["kode_gejala"][1:])  # Ambil angka setelah "G"
-                new_code = f"G{last_code + 1:02d}"  # Format menjadi G01, G02, dst.
-            else:
-                new_code = "G01"  # Jika belum ada data, mulai dari G01.
-
-            new_gejala = {
-                "kode_gejala": new_code,
-                "gejala": data['gejala']
-            }
-            db.gejala.insert_one(new_gejala)
-            return jsonify({"message": "Data gejala berhasil ditambahkan.", "kode_gejala": new_code}), 201
 
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'

@@ -134,6 +134,8 @@
                   placeholder="{{ kode_gejala_baru }}"
                   disabled
                 />
+              </div>
+              <div class="mb-3">
                 <label for="gejalaInput" class="form-label">Gejala</label>
                 <input
                   type="text"
@@ -309,36 +311,40 @@
 
       // Simpan perubahan
       $("#saveEditBtn").on("click", function () {
-    let kodeGejala = $("#editKodeGejala").val().trim(); // Ambil nilai input
-    let gejala = $("#editGejala").val().trim(); // Ambil nilai input
+        let kodeGejala = $("#editKodeGejala").val().trim(); // Ambil nilai input
+        let gejala = $("#editGejala").val().trim(); // Ambil nilai input
 
-    // Periksa apakah data tidak kosong
-    if (!kodeGejala || !gejala) {
-        Swal.fire("Error", "Kode gejala dan gejala tidak boleh kosong.", "error");
-        return;
-    }
+        // Periksa apakah data tidak kosong
+        if (!kodeGejala || !gejala) {
+          Swal.fire(
+            "Error",
+            "Kode gejala dan gejala tidak boleh kosong.",
+            "error"
+          );
+          return;
+        }
 
-    // Kirim data ke server
-    $.ajax({
-        url: `/kelolaGejalaEdit`,
-        type: "PUT",
-        contentType: "application/json",
-        data: JSON.stringify({
+        // Kirim data ke server
+        $.ajax({
+          url: `/kelolaGejalaEdit`,
+          type: "PUT",
+          contentType: "application/json",
+          data: JSON.stringify({
             kode_gejala: kodeGejala,
             gejala: gejala,
-        }),
-        success: function (response) {
+          }),
+          success: function (response) {
             Swal.fire("Sukses", response.message, "success").then(() => {
-                location.reload();
+              location.reload();
             });
-        },
-        error: function (xhr) {
-            let errorMessage = xhr.responseJSON?.message || "Terjadi kesalahan.";
+          },
+          error: function (xhr) {
+            let errorMessage =
+              xhr.responseJSON?.message || "Terjadi kesalahan.";
             Swal.fire("Error", errorMessage, "error");
-        }
-    });
-});
-
+          },
+        });
+      });
     </script>
     {% endblock %}
   </body>
