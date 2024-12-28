@@ -372,11 +372,11 @@ def kelolaGejalaEdit():
     except Exception as e:
         return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
 
-@app.route('/kelolaAnjuran')
+@app.route('/kelolaAnjuran', methods=['GET'])
 def kelolaAnjuran():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
+        payload = jwt.decode(
             token_receive,
             SECRET_KEY,
             algorithms=['HS256']
@@ -384,12 +384,74 @@ def kelolaAnjuran():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaAnjuran.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+
+        if request.method == 'GET':
+            if not is_admin:
+                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+            anjuran = list(db.anjuran.find().sort("kode_anjuran", -1))
+            kode_anjuran_terakhir = anjuran[0]["kode_anjuran"] if anjuran else "A00"
+            kode_anjuran_baru = f"A{int(kode_anjuran_terakhir[1:]) + 1:02d}"
+            return render_template(
+                'kelolaAnjuran.html',
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+                kode_anjuran_baru=kode_anjuran_baru,
+                anjuran=anjuran
+            )
+
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-    return render_template('kelolaAnjuran.html', msg=msg)
+    return render_template('kelolaGejala.html', msg=msg)
+
+@app.route('/kelolaAnjuranSave', methods=['POST'])
+def tambahAnjuranSave():
+    data = request.get_json()
+    if not data or "deskripsiAnjuran" not in data or not data["deskripsiAnjuran"]:
+        return jsonify({"message": "Data anjuran tidak valid."}), 400
+
+    # Menambahkan data ke database
+    try:
+        kode_anjuran = data["kode_anjuran"]
+        deskripsiAnjuran = data["deskripsiAnjuran"]
+
+        db.anjuran.insert_one({"kode_anjuran": kode_anjuran, "deskripsiAnjuran": deskripsiAnjuran})
+        return jsonify({"message": "Data anjuran berhasil disimpan."}), 200
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
+
+@app.route('/delete_anjuran/<id>', methods=['DELETE'])
+def delete_anjuran(id):
+    try:
+        db.anjuran.delete_one({"_id": ObjectId(id)})
+        return jsonify({"message": "berhasil"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/kelolaAnjuranEdit', methods=['PUT'])
+def kelolaAnjuranEdit():
+    try:
+        data = request.get_json()
+        kode_anjuran = data.get('kode_anjuran', '').strip()
+        deskripsiAnjuran = data.get('deskripsiAnjuran', '').strip()
+
+        if not kode_anjuran or not deskripsiAnjuran:
+            return jsonify({"message": "Kode anjuran dan deskripsi anjuran tidak boleh kosong"}), 400
+
+        result = db.anjuran.update_one(
+            {"kode_anjuran": kode_anjuran},
+            {"$set": {"deskripsiAnjuran": deskripsiAnjuran}}
+        )
+
+        if result.matched_count > 0:
+            return jsonify({"message": "Data berhasil diperbarui"}), 200
+        else:
+            return jsonify({"message": "Kode gejala tidak ditemukan"}), 404
+
+    except Exception as e:
+        return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
 
 @app.route('/kelolaPengetahuan')
 def kelolaPengetahuan():
