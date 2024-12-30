@@ -245,15 +245,15 @@ def kelolaPenyakit():
 @app.route('/kelolaPenyakitSave', methods=['POST'])
 def tambahPenyakitSave():
     data = request.get_json()
-    if not data or "penyakit" not in data or not data["penyakit"]:
+    if not data or "namaPenyakit" not in data or not data["namaPenyakit"]:
         return jsonify({"message": "Data penyakit tidak valid."}), 400
 
     try:
         kode_penyakit = data["kode_penyakit"]
-        penyakit = data["penyakit"]
+        namaPenyakit = data["namaPenyakit"]
         definisi = data["definisi"]
 
-        db.penyakit.insert_one({"kode_penyakit": kode_penyakit, "penyakit": penyakit, "definisi": definisi})
+        db.penyakit.insert_one({"kode_penyakit": kode_penyakit, "namaPenyakit": namaPenyakit, "definisi": definisi})
         return jsonify({"message": "Data penyakit berhasil disimpan."}), 200
     except Exception as e:
         return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
@@ -271,15 +271,15 @@ def kelolaPenyakitEdit():
     try:
         data = request.get_json()
         kode_penyakit = data.get('kode_penyakit', '').strip()
-        penyakit = data.get('penyakit', '').strip()
+        namaPenyakit = data.get('namaPenyakit', '').strip()
         definisi = data.get('definisi', '').strip()
 
-        if not kode_penyakit or not penyakit:
+        if not kode_penyakit or not namaPenyakit:
             return jsonify({"message": "Kode penyakit dan nama penyakit tidak boleh kosong"}), 400
 
         result = db.penyakit.update_one(
             {"kode_penyakit": kode_penyakit},
-            {"$set": {"penyakit": penyakit, "definisi": definisi}}
+            {"$set": {"namaPenyakit": namaPenyakit, "definisi": definisi}}
         )
 
         if result.matched_count > 0:

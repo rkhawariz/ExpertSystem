@@ -76,8 +76,8 @@
               {% for p in penyakit %}
               <tr data-id="{{ p._id }}">
                 <td>{{ p.kode_penyakit }}</td>
-                <td>{{ p.penyakit }}</td>
-                <td>{{ p.definisi }}</td>
+                <td>{{ p.namaPenyakit }}</td>
+                <td class="text-justify">{{ p.definisi }}</td>
                 <td class="text-center">
                   <button
                     type="button"
@@ -138,13 +138,13 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="PenyakitInput" class="form-label"
+                <label for="namaPenyakitInput" class="form-label"
                   >Nama Penyakit</label
                 >
                 <input
                   type="text"
                   class="form-control"
-                  id="penyakitInput"
+                  id="namaPenyakitInput"
                   placeholder="Masukkan nama penyakit"
                   required
                 />
@@ -209,14 +209,14 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="editPenyakit" class="form-label"
+                <label for="editNamaPenyakit" class="form-label"
                   >Nama Penyakit</label
                 >
                 <input
                   type="text"
                   class="form-control"
-                  id="editPenyakit"
-                  name="penyakit"
+                  id="editNamaPenyakit"
+                  name="namaPenyakit"
                   required
                 />
               </div>
@@ -257,7 +257,7 @@
           e.preventDefault();
           let data = {
             kode_penyakit: $("#kodePenyakitInput").attr("placeholder"),
-            penyakit: $("#penyakitInput").val(),
+            namaPenyakit: $("#namaPenyakitInput").val(),
             definisi: $("#definisiInput").val(),
           };
 
@@ -326,23 +326,23 @@
       $(document).on("click", ".edit-btn", function () {
         let row = $(this).closest("tr");
         let kodePenyakit = row.find("td:nth-child(1)").text().trim();
-        let penyakit = row.find("td:nth-child(2)").text().trim();
+        let namaPenyakit = row.find("td:nth-child(2)").text().trim();
         let definisi = row.find("td:nth-child(3)").text().trim();
 
         // Isi data ke dalam modal
         $("#editKodePenyakit").val(kodePenyakit);
-        $("#editPenyakit").val(penyakit);
+        $("#editNamaPenyakit").val(namaPenyakit);
         $("#editDefinisi").val(definisi);
       });
 
       // Simpan perubahan
       $("#saveEditBtn").on("click", function () {
         let kodePenyakit = $("#editKodePenyakit").val().trim(); // Ambil nilai input
-        let penyakit = $("#editPenyakit").val().trim(); // Ambil nilai input
+        let namaPenyakit = $("#editNamaPenyakit").val().trim(); // Ambil nilai input
         let definisi = $("#editDefinisi").val().trim(); // Ambil nilai input
 
         // Periksa apakah data tidak kosong
-        if (!kodePenyakit || !penyakit) {
+        if (!kodePenyakit || !namaPenyakit) {
           Swal.fire(
             "Error",
             "Kode penyakit dan nama penyakit tidak boleh kosong.",
@@ -358,7 +358,7 @@
           contentType: "application/json",
           data: JSON.stringify({
             kode_penyakit: kodePenyakit,
-            penyakit: penyakit,
+            namaPenyakit: namaPenyakit,
             definisi: definisi,
           }),
           success: function (response) {
