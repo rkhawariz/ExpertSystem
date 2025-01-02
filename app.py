@@ -169,6 +169,50 @@ def diagnosaStart():
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('diagnosaStart.html', msg=msg)
+
+# @app.route('/get-gejala', methods=['GET'])
+# def get_gejala():
+#     # Ambil semua gejala dari koleksi gejala
+#     gejalaList = list(db.gejala.find({}, {'_id': 0, 'gejala': 1}))  # Hanya ambil field 'gejala'
+#     # Formatkan ke bentuk dictionary dengan key "gejalaList"
+#     return jsonify({"gejalaList": gejalaList}), 200
+
+@app.route('/save-diagnosa', methods=['POST'])
+def save_diagnosa():
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({"result": "fail", "msg": "Token is missing"}), 401
+    
+    try:
+        # Decode token untuk mendapatkan email pasien
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        email = decoded_token["email"]
+
+        # Ambil data pasien dari koleksi `users`
+        user = db.users.find_one({"email": email}, {"_id": 0, "name": 1})
+        if not user:
+            return jsonify({"result": "fail", "msg": "User not found"}), 404
+        
+        # Ambil data diagnosa dari request
+        data = request.json
+        if not data:
+            return jsonify({"result": "fail", "msg": "No data provided"}), 400
+        
+        # Buat entry diagnosa baru
+        new_diagnosa = {
+            "nama_pasien": user["name"],
+            "tanggal_diagnosa": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+            "hasil_diagnosa": data.get("hasil_diagnosa"),  # Contoh: list gejala yang dipilih
+        }
+
+        # Simpan ke koleksi `diagnosa`
+        db.diagnosa.insert_one(new_diagnosa)
+
+        return jsonify({"result": "success", "msg": "Diagnosa saved successfully"}), 201
+    except jwt.ExpiredSignatureError:
+        return jsonify({"result": "fail", "msg": "Token has expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"result": "fail", "msg": "Invalid token"}), 401
   
 @app.route('/berandaAdmin')
 def berandaAdmin():
@@ -471,6 +515,38 @@ def kelolaPengetahuan():
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('kelolaPengetahuan.html', msg=msg)
+
+@app.route("/getPenyakit", methods=["GET"])
+def get_penyakit():
+    penyakit = list(db.penyakit.find({}, {"_id": 0}))
+    return jsonify(penyakit)
+
+@app.route("/getGejala", methods=["GET"])
+def get_gejala():
+    gejala = list(db.gejala.find({}, {"_id": 0}))
+    return jsonify(gejala)
+
+@app.route("/getAnjuran", methods=["GET"])
+def get_anjuran():
+    anjuran = list(db.anjuran.find({}, {"_id": 0}))
+    return jsonify(anjuran)
+
+@app.route("/addRule", methods=["POST"])
+def add_rule():
+    data = request.json
+    penyakit = data["penyakit"]
+    gejala = data["gejala"]
+    anjuran = data["anjuran"]
+
+    # Insert rule into database
+    rule = {
+        "penyakit": penyakit,
+        "gejala": gejala,
+        "anjuran": anjuran
+    }
+    db.rules.insert_one(rule)
+    return jsonify({"message": "Rule added successfully!"})
+
 
 @app.route('/kelolaUser', methods=['GET'])
 def kelolaUser():

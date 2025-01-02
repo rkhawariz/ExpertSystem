@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://kit.fontawesome.com/de152fe019.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="../static/script.js"></script>
-  <link href="../static/style.css" rel="stylesheet">
-  <title>Diagnosa - LambungHealth+</title>
-</head>
-<body>
-  {% include 'navbar.html' %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script
+      src="https://kit.fontawesome.com/de152fe019.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../static/script.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <link href="../static/style.css" rel="stylesheet" />
+    <title>Diagnosa - LambungHealth+</title>
+  </head>
+  <body>
+    {% include 'navbar.html' %}
     <div class="content-main">
       <section class="hero is-success is-halfheight">
         <div class="hero-body">
@@ -26,7 +35,142 @@
           </div>
         </div>
       </section>
+
+      <section>
+        <section class="hero is-success is-halfheight">
+          <div class="hero-body">
+            <div class="content">
+              <p class="title">Mulai Diagnosa</p>
+              <p class="subtitle">
+                Klik tombol untuk memulai diagnosa berdasarkan gejala Anda
+              </p>
+              <button class="button is-primary" id="startDiagnosisBtn">
+                Mulai Diagnosa
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Modal -->
+        <div id="diagnosisModal" class="modal">
+          <div class="modal-background"></div>
+          <div class="modal-content">
+            <div class="box">
+              <p class="title" id="questionTitle">Pertanyaan 1</p>
+              <p id="questionText"></p>
+              <div class="buttons">
+                <button class="button is-success" id="yesBtn">Ya</button>
+                <button class="button is-danger" id="noBtn">Tidak</button>
+              </div>
+            </div>
+          </div>
+          <button class="modal-close is-large" aria-label="close"></button>
+        </div>
+      </section>
     </div>
+
+    <script>
+      let gejalaList = [];
+      let currentQuestion = 0;
+      let answers = [];
+
+      // Fetch questions from server
+      function fetchQuestions() {
+        return $.ajax({
+          url: "/get-gejala",
+          method: "GET",
+          success: function (response) {
+            console.log("Response from server:", response); // Debug respons server
+            gejalaList = response.gejalaList; // Ambil daftar gejala dari respons
+          },
+          error: function (xhr, status, error) {
+            console.error("AJAX Error: ", {
+              status: status,
+              error: error,
+              responseText: xhr.responseText,
+            });
+            Swal.fire(
+              "Error",
+              `Gagal memuat pertanyaan dari server. Status: ${status}`,
+              "error"
+            );
+          },
+        });
+      }
+
+      // Start diagnosis process
+      $("#startDiagnosisBtn").on("click", async function () {
+        try {
+          await fetchQuestions();
+          if (gejalaList.length > 0) {
+            $("#diagnosisModal").addClass("is-active");
+            updateQuestion();
+          } else {
+            Swal.fire("Error", "Tidak ada pertanyaan yang tersedia.", "error");
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      });
+
+      // Update modal with the current question
+      function updateQuestion() {
+        if (currentQuestion < gejalaList.length) {
+          $("#questionTitle").text(`Pertanyaan ${currentQuestion + 1}`);
+          $("#questionText").text(
+            `Apakah Anda mengalami ${gejalaList[currentQuestion].gejala}?`
+          );
+        } else {
+          submitDiagnosa();
+        }
+      }
+
+      // Handle Yes/No Answer
+      $("#yesBtn").on("click", function () {
+        answers.push({
+          question: gejalaList[currentQuestion].gejala,
+          answer: "Ya",
+        });
+        currentQuestion++;
+        updateQuestion();
+      });
+
+      $("#noBtn").on("click", function () {
+        answers.push({
+          question: gejalaList[currentQuestion].gejala,
+          answer: "Tidak",
+        });
+        currentQuestion++;
+        updateQuestion();
+      });
+
+      // Close Modal
+      $(".modal-close").on("click", function () {
+        $("#diagnosisModal").removeClass("is-active");
+      });
+
+      // Submit answers to the server
+      function submitDiagnosa(hasilDiagnosa) {
+        $.ajax({
+          url: "/save-diagnosa",
+          method: "POST",
+          headers: {
+            Authorization: localStorage.getItem("token"), // Ambil token dari local storage
+          },
+          contentType: "application/json",
+          data: JSON.stringify({ hasil_diagnosa: hasilDiagnosa }),
+          success: function (response) {
+            Swal.fire("Sukses", response.msg, "success");
+          },
+          error: function (xhr) {
+            const errMsg = xhr.responseJSON
+              ? xhr.responseJSON.msg
+              : "Terjadi kesalahan.";
+            Swal.fire("Error", errMsg, "error");
+          },
+        });
+      }
+    </script>
     {% include 'footerUser.html' %}
   </body>
 </html>
