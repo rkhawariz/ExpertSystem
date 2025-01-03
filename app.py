@@ -219,7 +219,9 @@ def save_diagnosa():
             "user_id": user_info["_id"],
             "user_name": user_info["name"],
             "user_email": user_info["email"],
-            "tanggal": datetime.now().strftime('%Y-%m-%d %H:%M'),
+            "user_age": user_info["age"],
+            "user_gender": user_info["gender"],
+            "tanggal_diagnosa": datetime.now().strftime('%Y-%m-%d'),
             "jawaban": jawaban,
             "hasil_diagnosa": hasil_diagnosa
         }
@@ -297,7 +299,7 @@ def berandaAdmin():
 def kelolaDiagnosa():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
+        payload = jwt.decode(
             token_receive,
             SECRET_KEY,
             algorithms=['HS256']
@@ -305,7 +307,18 @@ def kelolaDiagnosa():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaDiagnosa.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+
+        if request.method == 'GET':
+            if not is_admin:
+                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+            diagnosaList = list(db.diagnosa.find())
+            return render_template(
+                'kelolaDiagnosa.html',
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+                diagnosaList=diagnosaList
+            )
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
@@ -344,7 +357,7 @@ def kelolaPenyakit():
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
-    return render_template('kelolaGejala.html', msg=msg)
+    return render_template('kelolaPenyakit.html', msg=msg)
 
 @app.route('/kelolaPenyakitSave', methods=['POST'])
 def tambahPenyakitSave():
@@ -610,7 +623,7 @@ def add_rule():
     # Struktur data baru
     rule = {
         "if_gejala": gejala,  # Gejala yang harus terpenuhi
-        "then": {
+        "then_penyakit": {
             "penyakit": penyakit,  # Kode penyakit
             "anjuran": anjuran  # Kode anjuran
         }
