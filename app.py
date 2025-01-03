@@ -151,69 +151,129 @@ def about():
         msg = 'There was a problem logging you in'
     return render_template('about.html', msg=msg)
 
-@app.route('/diagnosaStart')
-def diagnosaStart():
-    token_receive = request.cookies.get(TOKEN_KEY)
+@app.route('/halamanDiagnosa', methods=['GET'])
+def halamanDiagnosa():
+    token_receive = request.cookies.get(TOKEN_KEY)  # Ambil token dari cookie
+    if not token_receive:
+        return render_template('halamanDiagnosa.html', msg="Token tidak ditemukan. Silakan login kembali.")
+    
     try:
-        payload =jwt.decode(
-            token_receive,
-            SECRET_KEY,
-            algorithms=['HS256']
-        )
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('diagnosaStart.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+        return render_template(
+            'halamanDiagnosa.html',
+            user_info=user_info,
+            logged_in=logged_in,
+            is_admin=is_admin
+        )
     except jwt.ExpiredSignatureError:
-        msg = 'Your token has expired'
+        return render_template('halamanDiagnosa.html', msg="Sesi login Anda telah berakhir. Silakan login kembali.")
     except jwt.exceptions.DecodeError:
-        msg = 'There was a problem logging you in'
-    return render_template('diagnosaStart.html', msg=msg)
+        return render_template('halamanDiagnosa.html', msg="Token tidak valid. Silakan login kembali.")
 
-# @app.route('/get-gejala', methods=['GET'])
-# def get_gejala():
-#     # Ambil semua gejala dari koleksi gejala
-#     gejalaList = list(db.gejala.find({}, {'_id': 0, 'gejala': 1}))  # Hanya ambil field 'gejala'
-#     # Formatkan ke bentuk dictionary dengan key "gejalaList"
-#     return jsonify({"gejalaList": gejalaList}), 200
+
+@app.route('/get-gejala-diagnosa', methods=['GET'])
+def get_gejala_diagnosa():
+    gejalaList = list(db.gejala.find({}, {'_id': 0, 'kode_gejala': 1, 'gejala': 1})) 
+    return jsonify({"gejalaList": gejalaList}), 200
+
+def inference_engine(jawaban):
+    # print("Jawaban diterima oleh inference_engine:", jawaban)
+    rules = list(db.rules.find())
+    fakta = {item['kode_gejala']: item['answer'] for item in jawaban}
+
+    for rule in rules:
+        if all(fakta.get(gejala) == "Ya" for gejala in rule["if_gejala"]):
+            penyakit_data = db.penyakit.find_one({"kode_penyakit": rule["then_penyakit"]["penyakit"]})
+            anjuran_data = db.anjuran.find_one({"kode_anjuran": rule["then_penyakit"]["anjuran"]})
+            
+            return {
+                "penyakit": f"{rule['then_penyakit']['penyakit']} - {penyakit_data['namaPenyakit']}",
+                "anjuran": f"{rule['then_penyakit']['anjuran']} - {anjuran_data['deskripsiAnjuran']}"
+            }
+    return {"penyakit": "Tidak ada diagnosis yang cocok.", "anjuran": "N/A"}
+
 
 @app.route('/save-diagnosa', methods=['POST'])
 def save_diagnosa():
-    token = request.headers.get("Authorization")
-    if not token:
-        return jsonify({"result": "fail", "msg": "Token is missing"}), 401
-    
     try:
-        # Decode token untuk mendapatkan email pasien
-        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        email = decoded_token["email"]
+        token_receive = request.headers.get('Authorization')
+        if token_receive:
+            token_receive = token_receive.split(" ")[1]
+        else:
+            return jsonify({"error": "Token tidak ditemukan"}), 401
 
-        # Ambil data pasien dari koleksi `users`
-        user = db.users.find_one({"email": email}, {"_id": 0, "name": 1})
-        if not user:
-            return jsonify({"result": "fail", "msg": "User not found"}), 404
-        
-        # Ambil data diagnosa dari request
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        user_info = db.users.find_one({"email": payload["id"]})
         data = request.json
-        if not data:
-            return jsonify({"result": "fail", "msg": "No data provided"}), 400
-        
-        # Buat entry diagnosa baru
-        new_diagnosa = {
-            "nama_pasien": user["name"],
-            "tanggal_diagnosa": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
-            "hasil_diagnosa": data.get("hasil_diagnosa"),  # Contoh: list gejala yang dipilih
+
+        jawaban = data.get("jawaban")
+        if not jawaban:
+            return jsonify({"error": "Jawaban tidak ditemukan dalam permintaan"}), 400
+
+        hasil_diagnosa = inference_engine(jawaban)
+
+        diagnosa = {
+            "user_id": user_info["_id"],
+            "user_name": user_info["name"],
+            "user_email": user_info["email"],
+            "tanggal": datetime.now().strftime('%Y-%m-%d %H:%M'),
+            "jawaban": jawaban,
+            "hasil_diagnosa": hasil_diagnosa
         }
 
-        # Simpan ke koleksi `diagnosa`
-        db.diagnosa.insert_one(new_diagnosa)
+        db.diagnosa.insert_one(diagnosa)
+        return jsonify({"msg": "Diagnosa berhasil disimpan!", "diagnosa_id": str(diagnosa["_id"])})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        return jsonify({"result": "success", "msg": "Diagnosa saved successfully"}), 201
+
+@app.route('/hasil-diagnosa', methods=['GET'])
+def hasil_diagnosa():
+    diagnosa_id = request.args.get('id')
+    if not diagnosa_id:
+        return "ID diagnosa tidak ditemukan", 400
+
+    try:
+        token_receive = request.cookies.get(TOKEN_KEY)  # Ambil token dari cookie
+        if not token_receive:
+            return redirect(url_for('login', msg="Silakan login terlebih dahulu."))
+
+        # Decode token
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
+        user_info = db.users.find_one({"email": payload["id"]})
+        if not user_info:
+            return redirect(url_for('login', msg="Pengguna tidak ditemukan."))
+
+        # Cek kategori user
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+
+        # Temukan diagnosa berdasarkan ID
+        diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
+        if not diagnosa:
+            return "Diagnosa tidak ditemukan", 404
+
+        # Render halaman hasil diagnosa dengan informasi pengguna
+        return render_template(
+            'hasilDiagnosa.html',
+            diagnosa=diagnosa,
+            user_info=user_info,
+            logged_in=logged_in,
+            is_admin=is_admin
+        )
     except jwt.ExpiredSignatureError:
-        return jsonify({"result": "fail", "msg": "Token has expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"result": "fail", "msg": "Invalid token"}), 401
-  
+        return redirect(url_for('login', msg="Sesi login Anda telah berakhir."))
+    except jwt.exceptions.DecodeError:
+        return redirect(url_for('login', msg="Token tidak valid."))
+    except Exception as e:
+        return f"Terjadi kesalahan: {e}", 500
+
+
+
+
 @app.route('/berandaAdmin')
 def berandaAdmin():
     token_receive = request.cookies.get(TOKEN_KEY)
@@ -534,18 +594,33 @@ def get_anjuran():
 @app.route("/addRule", methods=["POST"])
 def add_rule():
     data = request.json
+
+    # Validasi input
+    if not all(key in data for key in ["penyakit", "gejala", "anjuran"]):
+        return jsonify({"message": "Invalid data format!"}), 400
+
     penyakit = data["penyakit"]
     gejala = data["gejala"]
     anjuran = data["anjuran"]
 
-    # Insert rule into database
+    # Pastikan gejala adalah list
+    if not isinstance(gejala, list):
+        return jsonify({"message": "Gejala must be a list!"}), 400
+
+    # Struktur data baru
     rule = {
-        "penyakit": penyakit,
-        "gejala": gejala,
-        "anjuran": anjuran
+        "if_gejala": gejala,  # Gejala yang harus terpenuhi
+        "then": {
+            "penyakit": penyakit,  # Kode penyakit
+            "anjuran": anjuran  # Kode anjuran
+        }
     }
+
+    # Insert rule ke database
     db.rules.insert_one(rule)
-    return jsonify({"message": "Rule added successfully!"})
+
+    return jsonify({"message": "Rule added successfully!"}), 201
+
 
 
 @app.route('/kelolaUser', methods=['GET'])

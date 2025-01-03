@@ -77,7 +77,7 @@
       // Fetch questions from server
       function fetchQuestions() {
         return $.ajax({
-          url: "/get-gejala",
+          url: "/get-gejala-diagnosa",
           method: "GET",
           success: function (response) {
             console.log("Response from server:", response); // Debug respons server
@@ -121,6 +121,7 @@
             `Apakah Anda mengalami ${gejalaList[currentQuestion].gejala}?`
           );
         } else {
+          console.log("Jawaban terkumpul:", answers);
           submitDiagnosa();
         }
       }
@@ -128,7 +129,7 @@
       // Handle Yes/No Answer
       $("#yesBtn").on("click", function () {
         answers.push({
-          question: gejalaList[currentQuestion].gejala,
+          kode_gejala: gejalaList[currentQuestion].kode_gejala,
           answer: "Ya",
         });
         currentQuestion++;
@@ -137,7 +138,7 @@
 
       $("#noBtn").on("click", function () {
         answers.push({
-          question: gejalaList[currentQuestion].gejala,
+          kode_gejala: gejalaList[currentQuestion].kode_gejala,
           answer: "Tidak",
         });
         currentQuestion++;
@@ -150,21 +151,35 @@
       });
 
       // Submit answers to the server
-      function submitDiagnosa(hasilDiagnosa) {
+      function submitDiagnosa() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire(
+            "Error",
+            "Token tidak ditemukan. Silakan login kembali.",
+            "error"
+          );
+          return;
+        }
+
+        console.log("Jawaban yang dikirim:", answers); // Debug log
         $.ajax({
           url: "/save-diagnosa",
           method: "POST",
           headers: {
-            Authorization: localStorage.getItem("token"), // Ambil token dari local storage
+            Authorization: "Bearer " + token,
           },
           contentType: "application/json",
-          data: JSON.stringify({ hasil_diagnosa: hasilDiagnosa }),
+          data: JSON.stringify({ jawaban: answers }),
           success: function (response) {
             Swal.fire("Sukses", response.msg, "success");
+            setTimeout(function () {
+              window.location.replace(`/hasil-diagnosa?id=${response.diagnosa_id}`);
+            }, 1000);
           },
           error: function (xhr) {
             const errMsg = xhr.responseJSON
-              ? xhr.responseJSON.msg
+              ? xhr.responseJSON.error
               : "Terjadi kesalahan.";
             Swal.fire("Error", errMsg, "error");
           },
