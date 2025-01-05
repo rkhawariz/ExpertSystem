@@ -1,54 +1,88 @@
-    <!-- Navbar -->
-    <div style="position: sticky; top: 0;" class="nav">
-      <nav class="navbar" id="navbar" role="navigation" aria-label="main navigation">
-          <div class="navbar-brand">
-              <a class="navbar-item" href="/">
-                  <img src="../static/logo.png" alt="" class="title is-4 is-logo">
-              </a>
+<!-- Navbar -->
+<div style="position: sticky; top: 0" class="nav">
+  <nav
+    class="navbar"
+    id="navbar"
+    role="navigation"
+    aria-label="main navigation"
+  >
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+        <img src="../static/logo.png" alt="" class="title is-4 is-logo" />
+      </a>
 
-              <!-- Toggle button for mobile -->
-              <a role="button" class="navbar-burger is-light" aria-label="menu" aria-expanded="false"
-                  data-target="navbarBasicExample" onclick="toggleNavbar()">
-                  <span aria-hidden="true"></span>
-                  <span aria-hidden="true"></span>
-                  <span aria-hidden="true"></span>
-              </a>
+      <!-- Toggle button for mobile -->
+      <a
+        role="button"
+        class="navbar-burger is-light"
+        aria-label="menu"
+        aria-expanded="false"
+        data-target="navbarBasicExample"
+        onclick="toggleNavbar()"
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="navbarBasicExample" class="navbar-menu">
+      <div class="navbar-start navbar-center">
+        <a class="navbar-item home" href="/">Home</a>
+        <a class="navbar-item" href="/artikel">Artikel</a>
+        <a class="navbar-item" href="/about">About Us</a>
+        {% if logged_in %} {% if is_admin %}
+        <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
+        {% else %}
+        <a class="navbar-item" href="/halamanDiagnosa">Diagnosa</a>
+        {% endif %} {% endif %}
+      </div>
+
+      {% if not logged_in %}
+      <div class="navbar-end navbar-auth">
+        <div class="pt-2">
+          <div class="buttons">
+            <a class="button is-masuk" href="/login">Masuk</a>
+            <a class="button is-ghost is-daftar mb-2" href="/register"
+              >Daftar</a
+            >
           </div>
-
-          <div id="navbarBasicExample" class="navbar-menu">
-              <div class="navbar-start navbar-center">
-                  <a class="navbar-item home" href="/">Home</a>
-                  <a class="navbar-item" href="/artikel">Artikel</a>
-                  <a class="navbar-item" href="/about">About Us</a>
-                  {% if logged_in %}
-                      {% if is_admin %}
-                      <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
-                      {% else %}
-                      <a class="navbar-item" href="/halamanDiagnosa">Diagnosa</a>
-                      {% endif %}
-                  {% endif %}
+        </div>
+      </div>
+      {% endif %} {% if logged_in %}
+      <div class="navbar-end navbar-auth">
+        <div class="pt-2 pr-4">
+          <div class="buttons">
+            <div class="dropdown is-hoverable">
+              <div class="dropdown-trigger">
+                <button
+                  class="button is-ghost"
+                  aria-haspopup="true"
+                  aria-controls="dropdown-menu"
+                >
+                  <span>{{ user_info.name }}</span>
+                  <span class="icon is-small">
+                    <i class="fa-solid fa-caret-down" aria-hidden="true"></i>
+                  </span>
+                </button>
               </div>
-
-              {% if not logged_in %}
-              <div class="navbar-end navbar-auth">
-                  <div class="pt-2">
-                      <div class="buttons">
-                          <a class="button is-masuk" href="/login">Masuk</a>
-                          <a class="button is-ghost is-daftar mb-2" href="/register">Daftar</a>
-                      </div>
-                  </div>
+              <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                <div class="dropdown-content">
+                  <a href="/riwayat-diagnosa" class="dropdown-item">
+                    Riwayat Diagnosa
+                  </a>
+                  <a href="/editProfilPasien" class="dropdown-item"> Edit Profil </a>
+                </div>
               </div>
-              {% endif %}
-              {% if logged_in %}
-              <div class="navbar-end navbar-auth">
-                  <div class="pt-2 pr-4">
-                      <div class="buttons">
-                      <a class="button is-ghost">{{ user_info.name }}</a>
-                          <a class="button is-warning" onclick="sign_out()"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
-                      </div>
-                  </div>
-              </div>
-              {% endif %}
+            </div>
+            <a class="button is-warning" onclick="sign_out()">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
           </div>
-      </nav>
-  </div>
+        </div>
+      </div>
+
+      {% endif %}
+    </div>
+  </nav>
+</div>

@@ -1,7 +1,7 @@
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, url_for, redirect
+from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response, render_template_string
 
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -12,6 +12,8 @@ from bson.objectid import ObjectId
 
 from pymongo import MongoClient
 import requests
+
+from weasyprint import HTML
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -249,7 +251,6 @@ def hasil_diagnosa():
         if not user_info:
             return redirect(url_for('login', msg="Pengguna tidak ditemukan."))
 
-        # Cek kategori user
         is_admin = user_info.get("category") == "admin"
         logged_in = True
 
@@ -257,11 +258,22 @@ def hasil_diagnosa():
         diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
         if not diagnosa:
             return "Diagnosa tidak ditemukan", 404
+        
+        gejala_list = list(db.gejala.find())
+        
+        gejala_dialami = [
+            gejala["gejala"]  # Ambil deskripsi gejala
+            for jawaban in diagnosa["jawaban"]
+            if jawaban["answer"] == "Ya"  # Jawaban "Ya"
+            for gejala in gejala_list
+            if gejala["kode_gejala"] == jawaban["kode_gejala"]  # Kode cocok
+        ]
 
         # Render halaman hasil diagnosa dengan informasi pengguna
         return render_template(
             'hasilDiagnosa.html',
             diagnosa=diagnosa,
+            gejala_dialami=gejala_dialami,
             user_info=user_info,
             logged_in=logged_in,
             is_admin=is_admin
@@ -272,7 +284,277 @@ def hasil_diagnosa():
         return redirect(url_for('login', msg="Token tidak valid."))
     except Exception as e:
         return f"Terjadi kesalahan: {e}", 500
+    
+# @app.route('/cetak-pdf', methods=['GET'])
+# def cetak_pdf():
+#     diagnosa_id = request.args.get('id')
+#     if not diagnosa_id:
+#         return "ID diagnosa tidak ditemukan", 400
 
+#     diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
+#     if not diagnosa:
+#         return "Diagnosa tidak ditemukan", 404
+
+#     # Gejala yang dialami
+#     gejala_dialami = []
+#     for item in diagnosa["jawaban"]:
+#         if item["answer"] == "Ya":
+#             gejala_data = db.gejala.find_one({"kode_gejala": item["kode_gejala"]})
+#             if gejala_data and "gejala" in gejala_data:
+#                 gejala_dialami.append(gejala_data["gejala"])
+
+#     # Render hasil template ke dalam PDF
+#     html_template = render_template(
+#         "hasilDiagnosa.html", diagnosa=diagnosa, gejala_dialami=gejala_dialami
+#     )
+
+#     try:
+#         pdf = HTML(string=html_template).write_pdf()
+#     except Exception as e:
+#         return f"Error saat menghasilkan PDF: {str(e)}", 500
+
+#     response = make_response(pdf)
+#     response.headers["Content-Type"] = "application/pdf"
+#     response.headers["Content-Disposition"] = f"attachment; filename=hasil_diagnosa_{diagnosa_id}.pdf"
+#     return response
+
+
+@app.route('/cetak-pdf', methods=['GET'])
+def cetak_pdf():
+    diagnosa_id = request.args.get('id')
+    if not diagnosa_id:
+        return "ID diagnosa tidak ditemukan", 400
+
+    diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
+    if not diagnosa:
+        return "Diagnosa tidak ditemukan", 404
+
+    gejala_dialami = []
+    for gejala in diagnosa['jawaban']:
+        if gejala['answer'] == 'Ya':
+            gejala_dialami.append(gejala['kode_gejala'])
+
+    # HTML template yang sama seperti di halaman web
+    html_template = f"""
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <style>
+        body {{
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }}
+        .container {{
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }}
+        .title {{
+            color: #40513B;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+        .subtitle {{
+            color: #6c757d;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }}
+        .content {{
+            margin: 20px 0;
+        }}
+        .columns {{
+            display: flex;
+            justify-content: space-between;
+        }}
+        .box {{
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }}
+        .has-text-warning {{
+            color: #FFA500;
+            font-weight: bold;
+        }}
+        .has-text-danger {{
+            color: #DC3545;
+            font-weight: bold;
+        }}
+        .has-text-centered {{
+            text-align: center;
+        }}
+        .divider {{
+            height: 3px;
+            background: linear-gradient(to right, #40513B, #6c757d);
+            border: none;
+            margin: 20px 0;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #6c757d;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content has-text-centered">
+            <h1 class="title">Hasil Diagnosa</h1>
+            <p class="subtitle">Detail hasil diagnosa dan rekomendasi untuk Anda</p>
+            <hr class="divider">
+        </div>
+
+        <div class="content">
+            <h2 class="title is-5">Informasi Pasien</h2>
+            <div class="columns">
+                <div class="column">
+                    <p><strong>Nama Pasien:</strong><br> {diagnosa['user_name']}</p>
+                    <p><strong>Email:</strong><br> {diagnosa['user_email']}</p>
+                </div>
+                <div class="column">
+                    <p><strong>Rentang Usia:</strong><br> {diagnosa['user_age']}</p>
+                    <p><strong>Jenis Kelamin:</strong><br> {diagnosa['user_gender']}</p>
+                </div>
+                <div class="column">
+                    <p><strong>Tanggal Diagnosa:</strong><br> {diagnosa['tanggal_diagnosa']}</p>
+                    <p><strong>LambungHealth<sup>+</sup> <br> at Klinik Alyssa Medika</strong></p>
+                </div>
+            </div>
+            <hr class="divider">
+        </div>
+
+        <div class="content">
+            <h2 class="title is-5">Hasil Diagnosa</h2>
+            <div class="box">
+                <p><strong>Penyakit:</strong> <span class="has-text-danger">{diagnosa['hasil_diagnosa']['penyakit']}</span></p>
+                <p><strong>Anjuran:</strong></p>
+                <div class="content has-text-justified is-small has-background-white p-3">
+                    {diagnosa['hasil_diagnosa']['anjuran']}
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 LambungHealth<sup>+</sup></p>
+            <p>at Klinik Alyssa Medika</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    try:
+        pdf = HTML(string=html_template).write_pdf()
+    except Exception as e:
+        return f"Error saat menghasilkan PDF: {str(e)}", 500
+
+    response = make_response(pdf)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = f"attachment; filename=hasil_diagnosa_{diagnosa_id}.pdf"
+    return response
+
+@app.route('/riwayatDiagnosa')
+def riwayatDiagnosa():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        print(user_info)
+        return render_template('riwayatDiagnosa.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('index.html', msg=msg)
+
+@app.route('/editProfilPasien')
+def editProfilPasien():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        payload =jwt.decode(
+            token_receive,
+            SECRET_KEY,
+            algorithms=['HS256']
+        )
+        user_info = db.users.find_one({"email": payload["id"]})
+        is_admin = user_info.get("category") == "admin"
+        logged_in = True
+        return render_template('editProfilPasien.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('index.html', msg=msg)
+
+from werkzeug.security import generate_password_hash
+
+@app.route('/updateProfile', methods=['POST'])
+def update_profile():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        # Decode token to get user information
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        user_email = payload['id']  # Assuming token stores the email
+        
+        # Get updated data from form
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Prepare update query
+        update_data = {"name": name, "email": email}
+        if password:
+            hashed_password = hashlib.sha256(password. encode('utf-8')).hexdigest()
+            update_data["password"] = hashed_password
+
+        # Update user in the database
+        db.users.update_one({"email": user_email}, {"$set": update_data})
+
+        return redirect('/editProfilPasien')
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('index.html', msg=msg)
+
+@app.route('/updateProfileAdmin', methods=['POST'])
+def update_profile_admin():
+    token_receive = request.cookies.get(TOKEN_KEY)
+    try:
+        # Decode token to get user information
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        user_email = payload['id']  # Assuming token stores the email
+        
+        # Get updated data from form
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Prepare update query
+        update_data = {"name": name, "email": email}
+        if password:
+            hashed_password = hashlib.sha256(password. encode('utf-8')).hexdigest()
+            update_data["password"] = hashed_password
+
+        # Update user in the database
+        db.users.update_one({"email": user_email}, {"$set": update_data})
+
+        return redirect('/editProfile')
+    except jwt.ExpiredSignatureError:
+        msg = 'Your token has expired'
+    except jwt.exceptions.DecodeError:
+        msg = 'There was a problem logging you in'
+    return render_template('index.html', msg=msg)
 
 
 

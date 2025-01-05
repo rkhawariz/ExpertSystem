@@ -22,7 +22,6 @@
   padding: 1rem;
   position: sticky;
   top: 0;
-  z-index: 100;
 }
 
 .navbar-center {
@@ -125,7 +124,6 @@
 
 .footer{
   bottom: 0;
-  margin-top: 2.5rem;
   background-color: #40513B;
 }
 

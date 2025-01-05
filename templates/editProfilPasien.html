@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script
+      src="https://kit.fontawesome.com/de152fe019.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../static/script.js"></script>
+    <link href="../static/style.css" rel="stylesheet" />
+    <title>Edit Profil - LambungHealth+</title>
+  </head>
+  <body>
+
+    <!-- navbar -->
+    <nav
+      class="navbar"
+      id="navbar"
+      role="navigation"
+      aria-label="main navigation"
+    >
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="../static/logo.png" alt="" class="title is-4 is-logo" />
+        </a>
+
+        <!-- Toggle button for mobile -->
+        <a
+          role="button"
+          class="navbar-burger is-light"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navbarBasicExample"
+          onclick="toggleNavbar()"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start navbar-center">
+          <a class="navbar-item home" href="/">Home</a>
+          <a class="navbar-item" href="/artikel">Artikel</a>
+          <a class="navbar-item" href="/about">About Us</a>
+          {% if logged_in %} {% if is_admin %}
+          <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
+          {% else %}
+          <a class="navbar-item" href="/halamanDiagnosa">Diagnosa</a>
+          {% endif %} {% endif %}
+        </div>
+
+        {% if not logged_in %}
+        <div class="navbar-end navbar-auth">
+          <div class="pt-2">
+            <div class="buttons">
+              <a class="button is-masuk" href="/login">Masuk</a>
+              <a class="button is-daftar" href="/register">Daftar</a>
+            </div>
+          </div>
+        </div>
+        {% endif %} {% if logged_in %}
+        <div class="navbar-end navbar-auth">
+          <div class="pt-2 pr-4">
+            <div class="buttons">
+              <div class="dropdown is-hoverable">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button is-ghost"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                  >
+                    <span>{{ user_info.name }}</span>
+                    <span class="icon is-small">
+                      <i class="fa-solid fa-caret-down" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="/riwayatDiagnosa" class="dropdown-item">
+                      Riwayat Diagnosa
+                    </a>
+                    <a href="/editProfilPasien" class="dropdown-item">
+                      Edit Profil
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <a class="button is-warning" onclick="sign_out()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% endif %}
+      </div>
+    </nav>
+    <!-- navbar end -->
+
+    <div class="content has-text-centered">
+      <h1 class="title is-3 has-text-grey-dark mt-6">Edit Profile</h1>
+      <p class="subtitle is-6 has-text-grey mt-2">
+        Perbarui profil Anda untuk menyesuaikan informasi dan pengaturan akun.
+      </p>
+    </div>
+
+    <div class="content-main">
+      <div class="container mt-5 mb-5">
+        <div class="columns is-centered">
+          <div class="column is-half">
+            <div class="card">
+              <!-- Profile Info -->
+              <div class="card-content">
+                <div class="content">
+                  <div class="field">
+                    <label class="label">Nama</label>
+                    <div class="control">
+                      <input
+                        class="input"
+                        id="formEditUserName"
+                        type="text"
+                        value="{{ user_info.name }}"
+                        readonly
+                      />
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                      <input
+                        class="input"
+                        id="formEditEmail"
+                        type="email"
+                        value="{{ user_info.email }}"
+                        readonly
+                      />
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="label">Password</label>
+                    <div class="control">
+                      <input
+                        class="input"
+                        id="password"
+                        type="password"
+                        value="********"
+                        readonly
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Edit Button -->
+                  <div class="has-text-centered mt-4">
+                    <button
+                      class="button is-link"
+                      data-target="editModal"
+                      aria-haspopup="true"
+                      onclick="openModal('editModal')"
+                    >
+                      Edit Profil
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal for Editing Profile -->
+        <div class="modal" id="editModal">
+          <div class="modal-background" onclick="closeModal('editModal')"></div>
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <p class="modal-card-title">Edit Profil</p>
+              <button
+                class="delete"
+                aria-label="close"
+                onclick="closeModal('editModal')"
+              ></button>
+            </header>
+            <section class="modal-card-body">
+              <!-- Form for Editing -->
+              <form
+                method="POST"
+                action="/updateProfile"
+                enctype="multipart/form-data"
+              >
+                <div class="field">
+                  <label class="label">Nama</label>
+                  <div class="control">
+                    <input
+                      class="input"
+                      id="editNama"
+                      name="name"
+                      type="text"
+                      value="{{ user_info.name }}"
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="label">Email</label>
+                  <div class="control">
+                    <input
+                      class="input"
+                      id="editEmail"
+                      name="email"
+                      type="email"
+                      value="{{ user_info.email }}"
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="label">New Password</label>
+                  <div class="control">
+                    <input
+                      class="input"
+                      id="editPassword"
+                      name="password"
+                      type="password"
+                      placeholder="New Password"
+                    />
+                  </div>
+                </div>
+                <button class="button is-success mr-1" type="submit">
+                  Simpan
+                </button>
+                <button class="button" onclick="closeModal('editModal')">
+                  Batal
+                </button>
+              </form>
+            </section>
+            <footer class="modal-card-foot">
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% include 'footerUser.html' %}
+
+    <script>
+      function openModal(modalId) {
+        document.getElementById(modalId).classList.add("is-active");
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove("is-active");
+      }
+    </script>
+  </body>
+</html>

@@ -113,7 +113,7 @@
               <!-- Form for Editing -->
               <form
                 method="POST"
-                action="/profile_User"
+                action="/updateProfileAdmin"
                 enctype="multipart/form-data"
               >
                 <div class="mb-3">
@@ -122,7 +122,7 @@
                     type="text"
                     class="form-control"
                     id="editNama"
-                    name="nama"
+                    name="name"
                     value="{{ user_info.name }}"
                   />
                 </div>
@@ -149,9 +149,9 @@
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  onclick="saveChanges()"
+                  type="submit"
                 >
-                  Save Changes
+                  Simpan
                 </button>
               </form>
             </div>

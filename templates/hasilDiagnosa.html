@@ -25,36 +25,164 @@
     <title>Diagnosa - LambungHealth+</title>
   </head>
   <body>
-    {% include 'navbar.html' %}
-    <div class="content-main">
-      <section class="hero is-halfheight">
-        <div class="hero-body">
-          <div class="">
-            <h1 class="title">Hasil Diagnosa</h1>
-            <p class="subtitle">Half height subtitle</p>
-          <div class="box">
-            <p><strong>Nama Pasien:</strong> {{ diagnosa.user_name }}</p>
-            <p><strong>Email Pasien:</strong> {{ diagnosa.user_email }}</p>
-            <p><strong>Rentang Usia:</strong> {{ diagnosa.user_age }}</p>
-            <p><strong>Jenis Kelamin:</strong> {{ diagnosa.user_gender }}</p>
-            <p><strong>Tanggal Diagnosa:</strong> {{ diagnosa.tanggal_diagnosa }}</p>
-            <p><strong>Hasil Diagnosa:</strong></p>
-            <ul>
-              <li><strong>Penyakit:</strong> {{ diagnosa.hasil_diagnosa.penyakit }}</li>
-              <li><strong>Anjuran:</strong> {{ diagnosa.hasil_diagnosa.anjuran }}</li>
-            </ul>
-          </div>
-          </div>
-        </div>
-        
-      </section>
+    
+    <!-- navbar -->
+    <nav
+      class="navbar"
+      id="navbar"
+      role="navigation"
+      aria-label="main navigation"
+    >
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="../static/logo.png" alt="" class="title is-4 is-logo" />
+        </a>
 
-      <section>
-        <div class="container">
-          
+        <!-- Toggle button for mobile -->
+        <a
+          role="button"
+          class="navbar-burger is-light"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navbarBasicExample"
+          onclick="toggleNavbar()"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start navbar-center">
+          <a class="navbar-item home" href="/">Home</a>
+          <a class="navbar-item" href="/artikel">Artikel</a>
+          <a class="navbar-item" href="/about">About Us</a>
+          {% if logged_in %} {% if is_admin %}
+          <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
+          {% else %}
+          <a class="navbar-item" href="/halamanDiagnosa">Diagnosa</a>
+          {% endif %} {% endif %}
+        </div>
+
+        {% if not logged_in %}
+        <div class="navbar-end navbar-auth">
+          <div class="pt-2">
+            <div class="buttons">
+              <a class="button is-masuk" href="/login">Masuk</a>
+              <a class="button is-daftar" href="/register">Daftar</a>
+            </div>
+          </div>
+        </div>
+        {% endif %} {% if logged_in %}
+        <div class="navbar-end navbar-auth">
+          <div class="pt-2 pr-4">
+            <div class="buttons">
+              <div class="dropdown is-hoverable">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button is-ghost"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                  >
+                    <span>{{ user_info.name }}</span>
+                    <span class="icon is-small">
+                      <i class="fa-solid fa-caret-down" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="/riwayatDiagnosa" class="dropdown-item">
+                      Riwayat Diagnosa
+                    </a>
+                    <a href="/editProfilPasien" class="dropdown-item">
+                      Edit Profil
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <a class="button is-warning" onclick="sign_out()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% endif %}
+      </div>
+    </nav>
+    <!-- navbar end -->
+    <div>
+      <section class="hero is-light is-fullheight">
+        <div class="hero-body">
+          <div class="container-fluid">
+            <div class="box has-background-white p-6">
+              <!-- Title Section -->
+              <div class="content has-text-centered">
+                <h1 class="title" style="color: #40513B;">Hasil Diagnosa</h1>
+                <p class="subtitle">Detail hasil diagnosa dan rekomendasi untuk Anda</p>
+                <hr style="background-color: #40513B; height: 2px; border: none;">
+              </div>
+      
+              <!-- Patient Information -->
+              <div class="content">
+                <h2 class="title is-4">Informasi Pasien</h2>
+                <div class="columns">
+                  <div class="column">
+                    <p><strong>Nama Pasien:</strong> {{ diagnosa.user_name }}</p>
+                    <p><strong>Email:</strong> {{ diagnosa.user_email }}</p>
+                  </div>
+                  <div class="column">
+                    <p><strong>Rentang Usia:</strong> {{ diagnosa.user_age }}</p>
+                    <p><strong>Jenis Kelamin:</strong> {{ diagnosa.user_gender }}</p>
+                  </div>
+                  <div class="column">
+                    <p><strong>Tanggal Diagnosa:</strong> {{ diagnosa.tanggal_diagnosa }}</p>
+                    <p><strong>LambungHealth<sup>+</sup> at Klinik Alyssa Medika</strong></p>
+                  </div>
+                </div>
+                <hr>
+              </div>
+      
+              <!-- Symptoms Section -->
+              <div class="content">
+                <h2 class="title is-4">Gejala yang dialami:</h2>
+                <ul class="content">
+                  {% for gejala in gejala_dialami %}
+                  <li class="has-text-warning">
+                    <i class="fas fa-check-circle"></i> {{ gejala }}
+                  </li>
+                  {% endfor %}
+                </ul>
+                <hr>
+              </div>
+      
+              <!-- Diagnosis Results -->
+              <div class="content">
+                <h2 class="title is-4">Hasil Diagnosa</h2>
+                <div class="box has-background-light">
+                  <p><strong>Penyakit:</strong> <span class="has-text-danger">{{ diagnosa.hasil_diagnosa.penyakit }}</span></p>
+                  <p><strong>Anjuran:</strong></p>
+                  <div class="content has-text-justified has-background-white p-3">
+                    {{ diagnosa.hasil_diagnosa.anjuran }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="has-text-centered mt-4">
+                <a href="/cetak-pdf?id={{ diagnosa._id }}" class="button is-link is-medium" target="_blank">
+                  <span>Cetak</span>
+                  <span class="icon">
+                    <i class="fas fa-file-pdf"></i>
+                  </span>
+                </a>
+              </div>
+      
+            </div>
+          </div>
         </div>
       </section>
-      
     </div>
     {% include 'footerUser.html' %}
   </body>
