@@ -556,7 +556,9 @@ def update_profile_admin():
         msg = 'There was a problem logging you in'
     return render_template('index.html', msg=msg)
 
-
+@app.route('/forbidden')
+def forbidden():
+    return render_template('forbidden.html')
 
 @app.route('/berandaAdmin')
 def berandaAdmin():
@@ -570,6 +572,15 @@ def berandaAdmin():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
+        if is_admin:
+            return render_template(
+                "berandaAdmin.html",
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+            )
+        else:
+            return redirect('/forbidden')
         return render_template('berandaAdmin.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
@@ -592,7 +603,7 @@ def kelolaDiagnosa():
 
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
             diagnosaList = list(db.diagnosa.find())
             return render_template(
                 'kelolaDiagnosa.html',
@@ -622,7 +633,7 @@ def kelolaPenyakit():
 
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
             penyakit = list(db.penyakit.find().sort("kode_penyakit", -1))
             kode_penyakit_terakhir = penyakit[0]["kode_penyakit"] if penyakit else "P00"
             kode_penyakit_baru = f"P{int(kode_penyakit_terakhir[1:]) + 1:02d}"
@@ -705,7 +716,7 @@ def kelolaGejala():
         # Jika metode GET, kembalikan halaman dengan data gejala
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
             gejala = list(db.gejala.find().sort("kode_gejala", -1))
             kode_gejala_terakhir = gejala[0]["kode_gejala"] if gejala else "G00"
             kode_gejala_baru = f"G{int(kode_gejala_terakhir[1:]) + 1:02d}"
@@ -786,7 +797,7 @@ def kelolaAnjuran():
 
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
             anjuran = list(db.anjuran.find().sort("kode_anjuran", -1))
             kode_anjuran_terakhir = anjuran[0]["kode_anjuran"] if anjuran else "A00"
             kode_anjuran_baru = f"A{int(kode_anjuran_terakhir[1:]) + 1:02d}"
@@ -864,7 +875,15 @@ def kelolaPengetahuan():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('kelolaPengetahuan.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+        if is_admin:
+            return render_template(
+                "kelolaPengetahuan.html",
+                user_info=user_info,
+                logged_in=logged_in,
+                is_admin=is_admin,
+            )
+        else:
+            return redirect('/forbidden')
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
@@ -913,9 +932,7 @@ def add_rule():
 
     # Insert rule ke database
     db.rules.insert_one(rule)
-
     return jsonify({"message": "Rule added successfully!"}), 201
-
 
 
 @app.route('/kelolaUser', methods=['GET'])

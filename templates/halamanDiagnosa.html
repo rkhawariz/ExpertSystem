@@ -8,6 +8,14 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css"
+    />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script
       src="https://kit.fontawesome.com/de152fe019.js"
@@ -23,36 +31,269 @@
     ></script>
     <link href="../static/style.css" rel="stylesheet" />
     <title>Diagnosa - LambungHealth+</title>
+    <style>
+      .btn-start {
+        background-color: #ffa500;
+        color: white;
+        border-radius: 30px;
+        padding: 10px 20px;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+      }
+      .btn-start:hover {
+        background-color: #ff8500;
+      }
+      .info-card {
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+      }
+      .icon-circle {
+        background-color: #ffa500; /* Warna background */
+        color: white; /* Warna ikon */
+        border-radius: 50%; /* Membuat elemen menjadi lingkaran */
+        width: 60px; /* Tinggi dan lebar harus sama */
+        height: 60px;
+        display: flex; /* Untuk sentralisasi ikon */
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto; /* Memastikan elemen terpusat */
+      }
+
+      .modal-content {
+        max-width: 90%; /* Menggunakan 90% lebar layar untuk perangkat kecil */
+        margin: auto;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      @media (min-width: 768px) {
+        .modal-content {
+          max-width: 500px; /* Untuk perangkat lebih besar, batasi lebar maksimal */
+        }
+      }
+
+      .box {
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      .icon-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon-circle-large i {
+        color: #40513b;
+      }
+
+      /* Kontainer tombol */
+      .buttons {
+        display: flex;
+        gap: 1rem; /* Jarak antar tombol */
+        flex-wrap: wrap; /* Agar tombol tetap responsif */
+      }
+
+      /* Tombol */
+      button {
+        min-width: 120px; /* Lebar minimum tombol untuk konsistensi */
+        text-align: center;
+      }
+
+      /* Responsif untuk layar kecil */
+      @media (max-width: 768px) {
+        .buttons {
+          flex-direction: row; /* Tetap horizontal di layar kecil */
+          justify-content: center; /* Ratakan di tengah */
+        }
+      }
+    </style>
   </head>
   <body>
-    {% include 'navbar.html' %}
-    <div class="content-main">
-      <section class="hero is-success is-halfheight">
+    <!-- navbar -->
+    <nav
+      class="navbar"
+      id="navbar"
+      role="navigation"
+      aria-label="main navigation"
+    >
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img src="../static/logo.png" alt="" class="title is-4 is-logo" />
+        </a>
+
+        <!-- Toggle button for mobile -->
+        <a
+          role="button"
+          class="navbar-burger is-light"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navbarBasicExample"
+          onclick="toggleNavbar()"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start navbar-center">
+          <a class="navbar-item home" href="/">Home</a>
+          <a class="navbar-item" href="/artikel">Artikel</a>
+          <a class="navbar-item" href="/about">About Us</a>
+          {% if logged_in %} {% if is_admin %}
+          <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
+          {% else %}
+          <a class="navbar-item" href="/halamanDiagnosa">Diagnosa</a>
+          {% endif %} {% endif %}
+        </div>
+
+        {% if not logged_in %}
+        <div class="navbar-end navbar-auth">
+          <div class="pt-2">
+            <div class="buttons">
+              <a class="button is-masuk" href="/login">Masuk</a>
+              <a class="button is-daftar" href="/register">Daftar</a>
+            </div>
+          </div>
+        </div>
+        {% endif %} {% if logged_in %}
+        <div class="navbar-end navbar-auth">
+          <div class="pt-2 pr-4">
+            <div class="buttons">
+              <div class="dropdown is-hoverable">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button is-ghost"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                  >
+                    <span>{{ user_info.name }}</span>
+                    <span class="icon is-small">
+                      <i class="fa-solid fa-caret-down" aria-hidden="true"></i>
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="/riwayatDiagnosa" class="dropdown-item">
+                      Riwayat Diagnosa
+                    </a>
+                    <a href="/editProfilPasien" class="dropdown-item">
+                      Edit Profil
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <a class="button is-warning" onclick="sign_out()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% endif %}
+      </div>
+    </nav>
+    <!-- navbar end -->
+    <div>
+      <section class="hero has-background-light">
         <div class="hero-body">
-          <div class="">
-            <p class="title">Mulai Diagnosa</p>
-            <p class="subtitle">Half height subtitle</p>
+          <div class="container">
+            <div class="columns is-vcentered">
+              <div class="column" data-aos="fade-right">
+                <h1 class="title is-2">
+                  Mulai Diagnosa
+                  <span style="display: block">Kesehatan Lambung Anda</span>
+                </h1>
+                <p class="subtitle pt-4">
+                  Jawab pertanyaan sederhana untuk membantu kami memahami
+                  kondisi Anda. Ini hanya memerlukan beberapa menit!
+                </p>
+                <button
+                  class="button is-warning is-medium"
+                  id="startDiagnosisBtn"
+                >
+                  <span class="icon">
+                    <i class="fas fa-notes-medical"></i>
+                  </span>
+                  <span>Mulai Diagnosa</span>
+                </button>
+              </div>
+              <div class="column is-5">
+                <img
+                  src="../static/img/diagnoseDoctor.png"
+                  alt="Diagnosa Lambung"
+                  class="image is-rounded"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section>
-        <section class="hero is-success is-halfheight">
-          <div class="hero-body">
-            <div class="content">
-              <p class="title">Mulai Diagnosa</p>
-              <p class="subtitle">
-                Klik tombol untuk memulai diagnosa berdasarkan gejala Anda
-              </p>
-              <button class="button is-primary" id="startDiagnosisBtn">
-                Mulai Diagnosa
-              </button>
+      <!-- Info Section -->
+      <section class="section">
+        <div class="container">
+          <div class="columns is-multiline">
+            <div class="column is-4" data-aos="fade-right">
+              <div class="info-card has-text-centered p-5">
+                <span class="icon-circle">
+                  <i class="fas fa-clock" style="font-size: 1.5rem"></i>
+                </span>
+                <h3 class="title is-4">Cepat</h3>
+                <p>
+                  Diagnosa hanya memerlukan beberapa menit untuk memberikan
+                  hasil awal.
+                </p>
+              </div>
+            </div>
+            <div class="column is-4" data-aos="fade-up">
+              <div class="info-card has-text-centered p-5">
+                <span class="icon-circle">
+                  <i
+                    class="fas fa-clipboard-check"
+                    style="font-size: 1.5rem"
+                  ></i>
+                </span>
+                <h3 class="title is-4">Akurat</h3>
+                <p>
+                  Menggunakan algoritma terbaik untuk memberikan hasil yang
+                  dapat diandalkan.
+                </p>
+              </div>
+            </div>
+            <div class="column is-4" data-aos="fade-left">
+              <div class="info-card has-text-centered p-5">
+                <span class="icon-circle">
+                  <i class="fas fa-user-md" style="font-size: 1.5rem"></i>
+                </span>
+                <h3 class="title is-4">Profesional</h3>
+                <p>
+                  Hasil analisis disesuaikan dengan konsultasi dari ahli
+                  kesehatan lambung.
+                </p>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- Modal -->
-        <div id="diagnosisModal" class="modal">
+      <!-- Modal -->
+
+      <!-- <div id="diagnosisModal" class="modal">
           <div class="modal-background"></div>
           <div class="modal-content">
             <div class="box">
@@ -65,11 +306,47 @@
             </div>
           </div>
           <button class="modal-close is-large" aria-label="close"></button>
-        </div>
-      </section>
+        </div> -->
     </div>
 
+    <div id="diagnosisModal" class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div
+          class="box p-5 has-background-light is-flex is-flex-direction-column is-align-items-center"
+        >
+          <div class="mb-4">
+            <span class="icon-circle-large">
+              <i class="fas fa-question-circle fa-2x"></i>
+            </span>
+          </div>
+          <h2
+            class="title is-4 has-text-primary has-text-centered mb-3"
+            id="questionTitle"
+          >
+          </h2>
+          <p class="has-text-centered is-size-6 mb-4" id="questionText">
+          </p>
+          <div
+            class="buttons is-justify-content-center is-align-items-center is-flex"
+          >
+            <button class="button is-success is-medium mx-2" id="yesBtn">
+              <span class="icon"><i class="fas fa-check"></i></span>
+              <span>Ya</span>
+            </button>
+            <button class="button is-danger is-medium mx-2" id="noBtn">
+              <span class="icon"><i class="fas fa-times"></i></span>
+              <span>Tidak</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
     <script>
+      AOS.init();
       let gejalaList = [];
       let currentQuestion = 0;
       let answers = [];
@@ -174,7 +451,9 @@
           success: function (response) {
             Swal.fire("Sukses", response.msg, "success");
             setTimeout(function () {
-              window.location.replace(`/hasil-diagnosa?id=${response.diagnosa_id}`);
+              window.location.replace(
+                `/hasil-diagnosa?id=${response.diagnosa_id}`
+              );
             }, 1000);
           },
           error: function (xhr) {
@@ -185,6 +464,17 @@
           },
         });
       }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const adjustModalForScreen = () => {
+          const modalContent = document.querySelector(".modal-content");
+          modalContent.style.maxWidth =
+            window.innerWidth < 768 ? "90%" : "500px";
+        };
+
+        window.addEventListener("resize", adjustModalForScreen);
+        adjustModalForScreen(); // Call on load
+      });
     </script>
     {% include 'footerUser.html' %}
   </body>
