@@ -107,6 +107,19 @@
   color: #40513B;
 }
 
+.myButton {
+  background-color: #40513B;
+  color: #fff;
+  border-radius: 10px;
+  border: none;
+}
+
+.myButton:hover {
+  background-color: white;
+  border-radius: 10px;
+  color: #40513B;
+}
+
 .nama:hover {
   text-decoration: none;
   color: #40513B;
@@ -310,4 +323,13 @@ br {
     Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   margin-bottom: 3rem;
+}
+
+.feature-icon {
+  font-size: 3rem;
+  color: #40513b;
+}
+.highlight {
+  color: #40513b;
+  font-weight: bold;
 }

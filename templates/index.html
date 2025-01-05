@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
     />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" />
     <!-- Google fonts-->
     <link
       href="https://fonts.googleapis.com/css?family=Montserrat:400,700"
@@ -148,7 +149,8 @@
           <div class="column">
             <div class="jumbotron">
               <h1 class="title is-3 has-text-centered is-light">
-                LambungHealth<sup>+</sup> at Klinik Alyssa Medika
+                <span class="highlight">LambungHealth<sup>+</sup></span
+                  > at Klinik Alyssa Medika
               </h1>
               <br />
               <h2 class="section-subheading has-text-centered">
@@ -156,6 +158,129 @@
               </h2>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section has-background-light">
+      <div class="container">
+        <div class="columns is-vcentered">
+          <div class="ml-4 pl-6 column is-half" data-aos="fade-right">
+            <h1 class="title is-3 mb-3">
+              Apa itu <span class="highlight">LambungHealth<sup>+</sup></span
+              >?
+            </h1>
+            <p class="subtitle has-text-justified">
+              LambungHealth<sup>+</sup> adalah platform diagnosa lambung yang
+              membantu Anda memahami dan menjaga kesehatan lambung dengan mudah.
+            </p>
+            <p>
+              Kami bekerja sama dengan Klinik Alyssa Medika untuk memberikan
+              layanan kesehatan terbaik untuk Anda.
+            </p>
+            <a class="button myButton mt-4" href="#services"
+              >Pelajari Lebih Lanjut</a
+            >
+          </div>
+          <div class="ml-6 pl-6 column is-half" data-aos="fade-left">
+            <img
+              src="../static/img/vectorDoctor.png"
+              alt="Kesehatan Lambung"
+              style="max-width: 100%; height: 20rem;"
+              class="image"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="services" class="section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered" data-aos="fade-up">
+          Layanan Kami
+        </h2>
+        <br>
+        <div class="columns is-multiline pt-4">
+          <div class="column is-one-third" data-aos="zoom-in">
+            <div class="jumbotron has-text-centered">
+              <span class="icon feature-icon"
+                ><i class="fas fa-heartbeat"></i
+              ></span>
+              <h3 class="title is-5 mt-3">Diagnosa Penyakit</h3>
+              <p class="subtitle is-6">
+                Identifikasi potensi penyakit lambung berdasarkan gejala yang
+                Anda alami.
+              </p>
+            </div>
+          </div>
+          <div
+            class="column is-one-third"
+            data-aos="zoom-in"
+            data-aos-delay="200"
+          >
+            <div class="jumbotron has-text-centered">
+              <span class="icon feature-icon"
+                ><i class="fas fa-user-md"></i
+              ></span>
+              <h3 class="title is-5 mt-3">Konsultasi Dokter</h3>
+              <p class="subtitle is-6">
+                Konsultasi langsung dengan dokter di Klinik Alyssa Medika.
+              </p>
+            </div>
+          </div>
+          <div
+            class="column is-one-third"
+            data-aos="zoom-in"
+            data-aos-delay="400"
+          >
+            <div class="jumbotron has-text-centered">
+              <span class="icon feature-icon"><i class="fas fa-leaf"></i></span>
+              <h3 class="title is-5 mt-3">Rekomendasi Anjuran</h3>
+              <p class="subtitle is-6">
+                Dapatkan tips dan anjuran gaya hidup sehat untuk lambung Anda.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="diagnosis">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered" data-aos="fade-up">Diagnosa Cepat</h2>
+        <p class="has-text-centered" data-aos="fade-up" data-aos-delay="200">
+          Dengan LambungHealth<sup>+</sup>, Anda bisa memahami kondisi lambung Anda
+          dalam hitungan menit.
+        </p>
+        <div class="has-text-centered mt-4" data-aos="zoom-in">
+          <a href="/halamanDiagnosa" class="button myButton is-medium">
+            Mulai Diagnosa
+          </a>
+        </div>
+      </div>
+    </section>
+    
+
+    <!-- FAQ Section -->
+    <section class="section has-background-light">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered">
+          Pertanyaan Umum
+        </h2>
+        <br>
+        <div class="content pt-5">
+          <h4>Apa saja layanan yang tersedia di LambungHealth<sup>+</sup>?</h4>
+          <p>
+            Kami menyediakan layanan diagnosa penyakit lambung, konsultasi
+            dokter, dan rekomendasi gaya hidup sehat.
+          </p>
+          <h4>Bagaimana cara mengakses layanan ini?</h4>
+          <p>
+            Anda dapat mengunjungi platform kami secara online atau langsung ke
+            Klinik Alyssa Medika.
+          </p>
         </div>
       </div>
     </section>
@@ -175,5 +300,14 @@
       </section>
     </div>
     {% include 'footerUser.html' %}
+
+    <script
+      src="https://kit.fontawesome.com/a076d05399.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
   </body>
 </html>
