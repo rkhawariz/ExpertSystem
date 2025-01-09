@@ -477,11 +477,11 @@ def riwayatDiagnosa():
         msg = 'There was a problem logging you in'
     return render_template('index.html', msg=msg)
 
-@app.route('/editProfilPasien')
+@app.route('/editProfilPasien', methods=["GET"])
 def editProfilPasien():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
+        payload = jwt.decode(
             token_receive,
             SECRET_KEY,
             algorithms=['HS256']
@@ -489,12 +489,24 @@ def editProfilPasien():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
-        return render_template('editProfilPasien.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
+
+        # Mengambil riwayat diagnosa pasien berdasarkan ID user
+        riwayat = list(db.diagnosa.find({"user_email": user_info["email"]}))
+        
+        # Kirim data ke template
+        return render_template(
+            'editProfilPasien.html',
+            user_info=user_info,
+            logged_in=logged_in,
+            is_admin=is_admin,
+            riwayat=riwayat
+        )
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('index.html', msg=msg)
+
 
 from werkzeug.security import generate_password_hash
 

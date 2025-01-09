@@ -19,7 +19,6 @@
     <title>Edit Profil - LambungHealth+</title>
   </head>
   <body>
-
     <!-- navbar -->
     <nav
       class="navbar"
@@ -104,15 +103,15 @@
     </nav>
     <!-- navbar end -->
 
-    <div class="content has-text-centered">
-      <h1 class="title is-3 has-text-grey-dark mt-6">Edit Profile</h1>
-      <p class="subtitle is-6 has-text-grey mt-2">
-        Perbarui profil Anda untuk menyesuaikan informasi dan pengaturan akun.
-      </p>
-    </div>
-
-    <div class="content-main">
-      <div class="container mt-5 mb-5">
+    <section class="section">
+      <div class="container">
+        <h1 class="has-text-centered title is-3 has-text-grey-dark">
+          Edit Profile
+        </h1>
+        <p class="has-text-centered subtitle is-6 has-text-grey mt-2">
+          Perbarui profil Anda untuk menyesuaikan informasi dan pengaturan akun.
+        </p>
+        <br />
         <div class="columns is-centered">
           <div class="column is-half">
             <div class="card">
@@ -240,12 +239,66 @@
                 </button>
               </form>
             </section>
-            <footer class="modal-card-foot">
-            </footer>
+            <footer class="modal-card-foot"></footer>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section class="section has-background-light">
+      <h2 class="has-text-centered title is-3 has-text-grey-dark">
+        Riwayat Diagnosa
+      </h2>
+      <p class="subtitle is-6 has-text-centered has-text-grey">
+        Lihat riwayat diagnosa Anda sebelumnya di sini.
+      </p>
+      <br />
+      {% if riwayat %}
+      <div class="table-container">
+        <table class="table is-striped is-fullwidth is-hoverable">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Tanggal Diagnosa</th>
+              <th>Nama</th>
+              <th>Hasil Diagnosa</th>
+              <th class="has-text-centered">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for diagnosa in riwayat %}
+            <tr>
+              <td>{{ loop.index}}</td>
+              <td>{{ diagnosa.tanggal_diagnosa }}</td>
+              <td>{{ diagnosa.user_name }}</td>
+              <td class="">{{ diagnosa.hasil_diagnosa.penyakit }}</td>
+              <td class="has-text-centered">
+                <a
+                  target="_blank"
+                  href="{{ url_for('hasil_diagnosa', id=diagnosa._id) }}"
+                  class="button is-small is-warning"
+                >
+                  Lihat Detail
+                </a>
+              </td>
+            </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="notification is-warning has-text-centered">
+        Belum ada data riwayat diagnosa. Ayo mulai diagnosa sekarang untuk
+        mengetahui kondisi kesehatan lambung Anda!
+      </div>
+      <div class="has-text-centered">
+        <a href="/halamanDiagnosa" class="button myButton is-medium">
+          Mulai Diagnosa
+        </a>
+      </div>
+      {% endif %}
+    </section>
     {% include 'footerUser.html' %}
 
     <script>
