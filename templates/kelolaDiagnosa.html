@@ -42,18 +42,15 @@
     </p>
 
     <div class="mb-2 d-flex justify-content-end">
-      <a
-        class="btn btn-primary"
-        href="/halamanDiagnosa"
-      >
-        Mulai Diagnosa
-      </a>
+      <a class="btn btn-primary" href="/halamanDiagnosa"> Mulai Diagnosa </a>
     </div>
 
     <!-- Table Start -->
     <div class="card shadow mb-4">
       <div style="background-color: #41513b" class="card-header py-3">
-        <h6 style="color: #fff" class="m-0 font-weight-bold">Tabel Riwayat Diagnosa</h6>
+        <h6 style="color: #fff" class="m-0 font-weight-bold">
+          Tabel Riwayat Diagnosa
+        </h6>
       </div>
       <div class="card-body">
         <div class="table-responsive">
@@ -83,15 +80,13 @@
                 <td>{{ d.hasil_diagnosa.penyakit }}</td>
                 <td class="text-center">
                   <button
-                    type="button"
-                    class="btn btn-info btn-sm edit-btn"
-                    data-toggle="modal"
-                    data-target="#editModal"
+                    class="btn btn-info btn-sm"
+                    onclick="showDetail('{{ d._id|string }}')"
                   >
                     <i class="fas fa-circle-info"></i>
                   </button>
                   <button
-                    class="btn btn-danger btn-sm delete-btn"
+                    class="btn btn-danger btn-sm"
                     onclick="confirmHapus('{{ d._id|string }}')"
                   >
                     <i class="fas fa-trash"></i>
@@ -104,6 +99,69 @@
         </div>
       </div>
     </div>
+    <!-- Modal Detail -->
+    <div
+      class="modal fade"
+      id="detailModal"
+      tabindex="-1"
+      aria-labelledby="detailModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="detailModalLabel">Detail Diagnosa</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="detailContent">
+            <!-- Detail akan dimuat di sini melalui AJAX -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function showDetail(id) {
+        fetch(`/diagnosaDetail?id=${id}`)
+          .then((response) => response.text())
+          .then((html) => {
+            document.getElementById("detailContent").innerHTML = html;
+            const detailModal = new bootstrap.Modal(
+              document.getElementById("detailModal")
+            );
+            detailModal.show();
+          })
+          .catch((error) => {
+            alert("Gagal memuat detail diagnosa.");
+            console.error(error);
+          });
+      }
+
+      function confirmHapus(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus diagnosa ini?")) {
+          fetch(`/hapusDiagnosa?id=${id}`, {
+            method: "DELETE",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert("Diagnosa berhasil dihapus.");
+                location.reload();
+              } else {
+                alert("Gagal menghapus diagnosa.");
+              }
+            })
+            .catch((error) => {
+              alert("Terjadi kesalahan saat menghapus diagnosa.");
+              console.error(error);
+            });
+        }
+      }
+    </script>
     {% endblock %}
   </body>
 </html>

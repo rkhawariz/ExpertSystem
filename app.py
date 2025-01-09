@@ -600,7 +600,7 @@ def berandaAdmin():
         msg = 'There was a problem logging you in'
     return render_template('berandaAdmin.html', msg=msg)
 
-@app.route('/kelolaDiagnosa')
+@app.route('/kelolaDiagnosa', methods=["GET"])
 def kelolaDiagnosa():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
@@ -629,6 +629,50 @@ def kelolaDiagnosa():
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('kelolaDiagnosa.html', msg=msg)
+
+from bson.objectid import ObjectId
+
+@app.route('/diagnosaDetail', methods=["GET"])
+def diagnosa_detail():
+    diagnosa_id = request.args.get('id')
+    if not diagnosa_id:
+        return "ID diagnosa tidak ditemukan", 400
+
+    try:
+        diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
+        if not diagnosa:
+            return "Diagnosa tidak ditemukan", 404
+
+        gejala_list = list(db.gejala.find())
+        gejala_dialami = [
+            gejala["gejala"]  # Ambil deskripsi gejala
+            for jawaban in diagnosa["jawaban"]
+            if jawaban["answer"] == "Ya"  # Jawaban "Ya"
+            for gejala in gejala_list
+            if gejala["kode_gejala"] == jawaban["kode_gejala"]  # Kode cocok
+        ]
+
+        return render_template(
+            'modalDetailDiagnosa.html', 
+            diagnosa=diagnosa,
+            gejala_dialami=gejala_dialami
+        )
+    except Exception as e:
+        return f"Terjadi kesalahan: {e}", 500
+
+
+@app.route('/hapusDiagnosa', methods=['DELETE'])
+def hapusDiagnosa():
+    diagnosa_id = request.args.get('id')
+    if not diagnosa_id:
+        return jsonify({"success": False, "message": "ID diagnosa tidak ditemukan"}), 400
+
+    result = db.diagnosa.delete_one({"_id": ObjectId(diagnosa_id)})
+    if result.deleted_count == 1:
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "message": "Diagnosa gagal dihapus"}), 500
+
 
 @app.route('/kelolaPenyakit', methods=['GET'])
 def kelolaPenyakit():

@@ -1,0 +1,71 @@
+<div class="modal-body">
+  <!-- Informasi Pasien -->
+  <div class="mb-4">
+    <h6 class="text-primary">
+      <i class="fas fa-info-circle"></i> Informasi Pasien
+    </h6>
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Nama:</strong> {{ diagnosa.user_name }}</p>
+        <p><strong>Email:</strong> {{ diagnosa.user_email }}</p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>Rentang Usia:</strong> {{ diagnosa.user_age }}</p>
+        <p><strong>Jenis Kelamin:</strong> {{ diagnosa.user_gender }}</p>
+      </div>
+      <div class="col-md-12">
+        <p>
+          <strong>Tanggal Diagnosa:</strong> {{ diagnosa.tanggal_diagnosa }}
+        </p>
+      </div>
+    </div>
+    <hr />
+  </div>
+
+  <!-- Gejala yang Dialami -->
+  <div class="mb-4">
+    <h6 class="text-warning">
+      <i class="fas fa-notes-medical"></i> Gejala yang Dialami
+    </h6>
+    <ul class="list-group">
+      {% for gejala in gejala_dialami %}
+      <li class="list-group-item">
+        <i class="fas fa-check-circle text-success"></i> {{ gejala }}
+      </li>
+      {% endfor %}
+    </ul>
+    <hr />
+  </div>
+
+  <!-- Hasil Diagnosa -->
+  <div>
+    <h6 class="text-danger"><i class="fas fa-heartbeat"></i> Hasil Diagnosa</h6>
+    <div class="card bg-light">
+      <div class="card-body">
+        <p>
+          <strong>Penyakit:</strong>
+          <span class="text-danger"
+            >{{ diagnosa.hasil_diagnosa.penyakit }}</span
+          >
+        </p>
+        <p><strong>Anjuran:</strong></p>
+        <p class="card-text">{{ diagnosa.hasil_diagnosa.anjuran }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <a
+    href="/cetak-pdf?id={{ diagnosa._id }}"
+    target="_blank"
+    class="btn btn-outline-primary d-flex align-items-center gap-2"
+  >
+    <i class="fas fa-file-pdf"></i>
+    <span>Cetak PDF</span>
+  </a>
+
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+    Tutup
+  </button>
+</div>
