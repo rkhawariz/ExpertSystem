@@ -38,16 +38,11 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
       <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-      <a
-        href="#"
-        class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-        ><i class="fas fa-download fa-sm text-white-50"></i> Generate Report</a
-      >
     </div>
 
     <!-- Content Row -->
     <div class="row">
-      <!-- Earnings (Monthly) Card Example -->
+      <!-- Daftar Penyakit Card -->
       <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-danger shadow h-100 py-2">
           <div class="card-body">
@@ -58,7 +53,9 @@
                 >
                   Daftar Penyakit
                 </div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">7</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                  {{ total_penyakit }}
+                </div>
               </div>
               <div class="col-auto">
                 <i class="fas fa-file-medical fa-2x text-gray-300"></i>
@@ -68,7 +65,7 @@
         </div>
       </div>
 
-      <!-- Earnings (Monthly) Card Example -->
+      <!-- Daftar Gejala Card -->
       <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-success shadow h-100 py-2">
           <div class="card-body">
@@ -79,7 +76,9 @@
                 >
                   Daftar Gejala
                 </div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">14</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                  {{ total_gejala }}
+                </div>
               </div>
               <div class="col-auto">
                 <i class="fas fa-book-medical fa-2x text-gray-300"></i>
@@ -89,7 +88,7 @@
         </div>
       </div>
 
-      <!-- Earnings (Monthly) Card Example -->
+      <!-- Total Diagnosa Card -->
       <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-info shadow h-100 py-2">
           <div class="card-body">
@@ -103,7 +102,7 @@
                 <div class="row no-gutters align-items-center">
                   <div class="col-auto">
                     <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
-                      141
+                      {{ total_diagnosa }}
                     </div>
                   </div>
                   <div class="col">
@@ -128,7 +127,7 @@
         </div>
       </div>
 
-      <!-- Pending Requests Card Example -->
+      <!-- Total User Card -->
       <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-warning shadow h-100 py-2">
           <div class="card-body">
@@ -139,7 +138,9 @@
                 >
                   Total User
                 </div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">59</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                  {{ total_users }}
+                </div>
               </div>
               <div class="col-auto">
                 <i class="fas fa-clipboard-user fa-2x text-gray-300"></i>
@@ -152,42 +153,17 @@
 
     <!-- Content Row -->
 
-    <div class="row">
-      <!-- Area Chart -->
-      <div class="col-xl-7 col-lg-6">
-        <div class="card shadow mb-4">
-          <!-- Card Header - Dropdown -->
+    <div class="row d-flex align-items-stretch">
+      <!-- Statistik Diagnosa -->
+      <div class="col-xl-7 col-lg-5 d-flex">
+        <div class="card shadow mb-4 w-100">
           <div
             class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
           >
             <h6 style="color: #41513b" class="m-0 font-weight-bold">
-              Statistik Hasil Diagnosa
+              Statistik Hasil Diagnosa Per Bulan
             </h6>
-            <div class="dropdown no-arrow">
-              <a
-                class="dropdown-toggle"
-                href="#"
-                role="button"
-                id="dropdownMenuLink"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              >
-                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-              </a>
-              <div
-                class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                aria-labelledby="dropdownMenuLink"
-              >
-                <div class="dropdown-header">Dropdown Header:</div>
-                <a class="dropdown-item" href="#">Action</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#">Something else here</a>
-              </div>
-            </div>
           </div>
-          <!-- Card Body -->
           <div class="card-body">
             <div class="chart-area">
               <canvas id="myAreaChart"></canvas>
@@ -195,169 +171,136 @@
           </div>
         </div>
       </div>
-
-      <!-- Pie Chart -->
-      <div class="col-xl-5 col-lg-6">
-        <div class="card shadow mb-4">
-          <!-- Card Header - Dropdown -->
-          <div
-            class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
-          >
+    
+      <!-- Statistik Diagnosa Penyakit -->
+      <div class="col-xl-5 col-lg-5 d-flex">
+        <div class="card shadow mb-4 w-100">
+          <div class="card-header py-3">
             <h6 style="color: #41513b" class="m-0 font-weight-bold">
-              Statistik Prnyakit
+              Statistik Penyakit Terdiagnosa
             </h6>
-            <div class="dropdown no-arrow">
-              <a
-                class="dropdown-toggle"
-                href="#"
-                role="button"
-                id="dropdownMenuLink"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              >
-                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-              </a>
-              <div
-                class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                aria-labelledby="dropdownMenuLink"
-              >
-                <div class="dropdown-header">Dropdown Header:</div>
-                <a class="dropdown-item" href="#">Action</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#">Something else here</a>
-              </div>
-            </div>
           </div>
-          <!-- Card Body -->
           <div class="card-body">
-            <div class="chart-pie pt-4 pb-2">
-              <canvas id="myPieChart"></canvas>
-            </div>
-            <div class="mt-4 text-center small">
-              <span class="mr-2">
-                <i class="fas fa-circle text-primary"></i> Direct
-              </span>
-              <span class="mr-2">
-                <i class="fas fa-circle text-success"></i> Social
-              </span>
-              <span class="mr-2">
-                <i class="fas fa-circle text-info"></i> Referral
-              </span>
-            </div>
+            <canvas id="pieChartPenyakit"></canvas>
           </div>
         </div>
       </div>
     </div>
+    
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+                  document.addEventListener('DOMContentLoaded', function () {
+                    const ctx = document.getElementById('myAreaChart').getContext('2d');
+                    const labels = {{ labels|tojson }};
+                    const data = {{ data|tojson }};
 
-    <!-- Content Row -->
-    <div class="row">
-      <!-- Content Column -->
-      <div class="col-lg-6 mb-4">
-        <!-- Project Card Example -->
-        <div class="card shadow mb-4">
-          <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
-          </div>
-          <div class="card-body">
-            <h4 class="small font-weight-bold">
-              Server Migration <span class="float-right">20%</span>
-            </h4>
-            <div class="progress mb-4">
-              <div
-                class="progress-bar bg-danger"
-                role="progressbar"
-                style="width: 20%"
-                aria-valuenow="20"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-            <h4 class="small font-weight-bold">
-              Sales Tracking <span class="float-right">40%</span>
-            </h4>
-            <div class="progress mb-4">
-              <div
-                class="progress-bar bg-warning"
-                role="progressbar"
-                style="width: 40%"
-                aria-valuenow="40"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-            <h4 class="small font-weight-bold">
-              Customer Database <span class="float-right">60%</span>
-            </h4>
-            <div class="progress mb-4">
-              <div
-                class="progress-bar"
-                role="progressbar"
-                style="width: 60%"
-                aria-valuenow="60"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-            <h4 class="small font-weight-bold">
-              Payout Details <span class="float-right">80%</span>
-            </h4>
-            <div class="progress mb-4">
-              <div
-                class="progress-bar bg-info"
-                role="progressbar"
-                style="width: 80%"
-                aria-valuenow="80"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-            <h4 class="small font-weight-bold">
-              Account Setup <span class="float-right">Complete!</span>
-            </h4>
-            <div class="progress">
-              <div
-                class="progress-bar bg-success"
-                role="progressbar"
-                style="width: 100%"
-                aria-valuenow="100"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
+                    const myAreaChart = new Chart(ctx, {
+                      type: 'line',
+                      data: {
+                        labels: labels, // Bulan
+                        datasets: [{
+                          label: 'Jumlah Diagnosa',
+                          data: data, // Data Diagnosa
+                          borderColor: 'rgba(75, 192, 192, 1)',
+                          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                          borderWidth: 2,
+                          tension: 0.4,
+                          pointRadius: 5,
+                          pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            display: true,
+                            position: 'top'
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: function(context) {
+                                return `${context.raw} Diagnosa`;
+                              }
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            title: {
+                              display: true,
+                              text: 'Bulan'
+                            }
+                          },
+                          y: {
+                            title: {
+                              display: true,
+                              text: 'Jumlah Diagnosa'
+                            },
+                            beginAtZero: true,
 
-      <div class="col-lg-6 mb-4">
-        <!-- Illustrations -->
-        <div class="card shadow mb-4">
-          <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
-          </div>
-          <div class="card-body">
-            <div class="text-center">
-              <img
-                class="img-fluid px-3 px-sm-4 mt-3 mb-4"
-                style="width: 25rem"
-                src="img/undraw_posting_photo.svg"
-                alt="..."
-              />
-            </div>
-            <p>
-              Add some quality, svg illustrations to your project courtesy of
-              <a target="_blank" rel="nofollow" href="https://undraw.co/"
-                >unDraw</a
-              >, a constantly updated collection of beautiful svg images that
-              you can use completely free and without attribution!
-            </p>
-            <a target="_blank" rel="nofollow" href="https://undraw.co/"
-              >Browse Illustrations on unDraw &rarr;</a
-            >
-          </div>
-        </div>
-      </div>
+                          }
+                        }
+                      }
+                    });
+                  });
+
+                  const penyakitLabels = {{ penyakit_labels | tojson }};
+        const penyakitData = {{ penyakit_data | tojson }};
+
+        // Konfigurasi Pie Chart
+        const ctx = document.getElementById('pieChartPenyakit').getContext('2d');
+new Chart(ctx, {
+  type: 'pie',
+  data: {
+    labels: penyakitLabels,
+    datasets: [{
+      data: penyakitData,
+      backgroundColor: [
+        '#4e73df', // Warna 1
+        '#1cc88a', // Warna 2
+        '#36b9cc', // Warna 3
+        '#f6c23e', // Warna 4
+        '#e74a3b', // Warna 5
+        '#858796', // Warna 6
+      ],
+      hoverBackgroundColor: [
+        '#2e59d9', // Warna hover 1
+        '#17a673', // Warna hover 2
+        '#2c9faf', // Warna hover 3
+        '#f4b619', // Warna hover 4
+        '#e02d1b', // Warna hover 5
+        '#6c757d', // Warna hover 6
+      ],
+      hoverBorderColor: 'rgba(234, 236, 244, 1)',
+    }],
+  },
+  options: {
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,  // Ini akan membuat titik warna pada legend
+          pointStyle: 'circle', // Ganti bar menjadi titik
+          boxWidth: 10,          // Mengatur ukuran titik
+          padding: 15            // Menambahkan jarak antara titik dan teks
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(tooltipItem) {
+            const label = penyakitLabels[tooltipItem.dataIndex];
+            const value = penyakitData[tooltipItem.dataIndex];
+            return `${label}: ${value}`;
+          }
+        }
+      }
+    }
+  }
+});
+
+      </script>
       {% endblock %}
     </div>
   </body>

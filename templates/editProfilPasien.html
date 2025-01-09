@@ -269,7 +269,12 @@
             {% for diagnosa in riwayat %}
             <tr>
               <td>{{ loop.index}}</td>
-              <td>{{ diagnosa.tanggal_diagnosa }}</td>
+              <td
+                class="tanggal-diagnosa"
+                data-tanggal="{{ diagnosa.tanggal_diagnosa }}"
+              >
+                {{ diagnosa.tanggal_diagnosa }}
+              </td>
               <td>{{ diagnosa.user_name }}</td>
               <td class="">{{ diagnosa.hasil_diagnosa.penyakit }}</td>
               <td class="has-text-centered">
@@ -302,6 +307,17 @@
     {% include 'footerUser.html' %}
 
     <script>
+      // Format tanggal di semua elemen dengan class 'tanggal-diagnosa'
+      document
+        .querySelectorAll(".tanggal-diagnosa")
+        .forEach(function (element) {
+          var isoDate = element.getAttribute("data-tanggal"); // Ambil tanggal ISO dari atribut data-tanggal
+          if (isoDate) {
+            var date = new Date(isoDate); // Membuat objek Date dari string ISO
+            var formattedDate = date.toISOString().split("T")[0]; // Format menjadi YYYY-MM-DD
+            element.textContent = formattedDate; // Set tanggal yang sudah diformat di konten elemen
+          }
+        });
       function openModal(modalId) {
         document.getElementById(modalId).classList.add("is-active");
       }

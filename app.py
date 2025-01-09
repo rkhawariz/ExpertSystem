@@ -5,9 +5,9 @@ from flask import Flask, render_template, request, jsonify, url_for, redirect, m
 
 from datetime import datetime, timedelta
 from bson import ObjectId
+from bson.son import SON
 import hashlib
 import jwt
-import requests
 from bson.objectid import ObjectId
 
 from pymongo import MongoClient
@@ -223,7 +223,7 @@ def save_diagnosa():
             "user_email": user_info["email"],
             "user_age": user_info["age"],
             "user_gender": user_info["gender"],
-            "tanggal_diagnosa": datetime.now().strftime('%Y-%m-%d'),
+            "tanggal_diagnosa": datetime.now(),
             "jawaban": jawaban,
             "hasil_diagnosa": hasil_diagnosa
         }
@@ -492,6 +492,15 @@ def editProfilPasien():
 
         # Mengambil riwayat diagnosa pasien berdasarkan ID user
         riwayat = list(db.diagnosa.find({"user_email": user_info["email"]}))
+        riwayatList = []
+        for diagnosa in riwayat:
+                tanggal_diagnosa = diagnosa["tanggal_diagnosa"]
+                # Format tanggal menjadi YYYY-MM-DD
+                tanggal_terformat = tanggal_diagnosa.strftime('%Y-%m-%d')
+                riwayatList.append({
+                    "tanggal_terformat": tanggal_terformat,
+                    # Anda bisa menambahkan field lain yang ingin ditampilkan
+                })
         
         # Kirim data ke template
         return render_template(
@@ -572,11 +581,12 @@ def update_profile_admin():
 def forbidden():
     return render_template('forbidden.html')
 
-@app.route('/berandaAdmin')
+
+@app.route('/berandaAdmin', methods=["GET"])
 def berandaAdmin():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        payload =jwt.decode(
+        payload = jwt.decode(
             token_receive,
             SECRET_KEY,
             algorithms=['HS256']
@@ -584,21 +594,91 @@ def berandaAdmin():
         user_info = db.users.find_one({"email": payload["id"]})
         is_admin = user_info.get("category") == "admin"
         logged_in = True
+
         if is_admin:
+            # Menghitung total data
+            total_penyakit = db.penyakit.count_documents({})
+            total_gejala = db.gejala.count_documents({})
+            total_diagnosa = db.diagnosa.count_documents({})
+            total_users = db.users.count_documents({})
+
+            # Statistik Diagnosa (4 bulan terakhir)
+            today = datetime.now()
+            four_months_ago = today - timedelta(days=120)
+            pipeline = [
+            {"$match": {"tanggal_diagnosa": {"$gte": four_months_ago}}},
+                {
+                    "$group": {
+                        "_id": {
+                            "year": {"$year": "$tanggal_diagnosa"},
+                            "month": {"$month": "$tanggal_diagnosa"}
+                        },
+                        "count": {"$sum": 1}
+                        }
+                },
+                        {"$sort": {"_id.year": 1, "_id.month": 1}}
+                        ]
+
+            diagnosa_stats = list(db.diagnosa.aggregate(pipeline))
+            
+            penyakit_stats = db.diagnosa.aggregate([
+                {
+                    "$group": {
+                        "_id": "$hasil_diagnosa.penyakit",  # Mengelompokkan berdasarkan penyakit
+                        "count": {"$sum": 1}
+                    }
+                }
+            ])
+
+            # Format data untuk frontend
+            labels = []
+            data = []
+            for stat in diagnosa_stats:
+                year = stat["_id"]["year"]
+                month = stat["_id"]["month"]
+                month_name = datetime(year, month, 1).strftime("%B %Y")  # Contoh: "November 2024"
+                labels.append(month_name)
+                data.append(stat["count"])
+            
+            penyakit_labels = []
+            penyakit_data = []
+
+            for stat in penyakit_stats:
+                label = stat["_id"]  # Nama penyakit, misalnya "P01 - Radang Lambung"
+    
+                if label == "Tidak ada diagnosis yang cocok.":
+                    label = "N/A"
+                else:
+                    if " - " in label:
+                        label = label.split(" - ", 1)[1]  # Ambil hanya bagian setelah " - "
+                    if len(label) > 10:
+                        label = label[:10] + "..."  # Potong label dan tambahkan '...'
+    
+                penyakit_labels.append(label)
+                penyakit_data.append(stat["count"])  # Jumlah diagnosa
+
             return render_template(
                 "berandaAdmin.html",
                 user_info=user_info,
                 logged_in=logged_in,
                 is_admin=is_admin,
+                total_penyakit=total_penyakit,
+                total_gejala=total_gejala,
+                total_diagnosa=total_diagnosa,
+                total_users=total_users,
+                labels=labels,
+                data=data,
+                penyakit_labels=penyakit_labels,
+                penyakit_data=penyakit_data
             )
         else:
             return redirect('/forbidden')
-        return render_template('berandaAdmin.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
     except jwt.ExpiredSignatureError:
         msg = 'Your token has expired'
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('berandaAdmin.html', msg=msg)
+
 
 @app.route('/kelolaDiagnosa', methods=["GET"])
 def kelolaDiagnosa():

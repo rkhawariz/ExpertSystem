@@ -25,7 +25,6 @@
     <title>Diagnosa - LambungHealth+</title>
   </head>
   <body>
-    
     <!-- navbar -->
     <nav
       class="navbar"
@@ -112,38 +111,59 @@
     <div>
       <section class="hero is-light is-fullheight">
         <div class="hero-body">
-          <div class="container-fluid">
+          <div class="container">
             <div class="box has-background-white p-6">
               <!-- Title Section -->
               <div class="content has-text-centered">
-                <h1 class="title" style="color: #40513B;">Hasil Diagnosa</h1>
-                <p class="subtitle">Detail hasil diagnosa dan rekomendasi untuk Anda</p>
-                <hr style="background-color: #40513B; height: 2px; border: none;">
+                <h1 class="title" style="color: #40513b">Hasil Diagnosa</h1>
+                <p class="subtitle">
+                  Detail hasil diagnosa dan rekomendasi untuk Anda
+                </p>
+                <hr
+                  style="background-color: #40513b; height: 2px; border: none"
+                />
               </div>
-      
+
               <!-- Patient Information -->
               <div class="content">
-                <h2 class="title is-4"><i class="fas fa-info-circle"></i> Informasi Pasien</h2>
+                <h2 class="title is-4">
+                  <i class="fas fa-info-circle"></i> Informasi Pasien
+                </h2>
                 <div class="columns">
                   <div class="column">
-                    <p><strong>Nama Pasien:</strong> {{ diagnosa.user_name }}</p>
+                    <p>
+                      <strong>Nama Pasien:</strong> {{ diagnosa.user_name }}
+                    </p>
                     <p><strong>Email:</strong> {{ diagnosa.user_email }}</p>
                   </div>
                   <div class="column">
-                    <p><strong>Rentang Usia:</strong> {{ diagnosa.user_age }}</p>
-                    <p><strong>Jenis Kelamin:</strong> {{ diagnosa.user_gender }}</p>
+                    <p>
+                      <strong>Rentang Usia:</strong> {{ diagnosa.user_age }}
+                    </p>
+                    <p>
+                      <strong>Jenis Kelamin:</strong> {{ diagnosa.user_gender }}
+                    </p>
                   </div>
                   <div class="column">
-                    <p><strong>Tanggal Diagnosa:</strong> {{ diagnosa.tanggal_diagnosa }}</p>
-                    <p><strong>LambungHealth<sup>+</sup> at Klinik Alyssa Medika</strong></p>
+                    <p>
+                      <strong>Tanggal Diagnosa:</strong> <span class="tanggal-diagnosa" data-tanggal="{{ diagnosa.tanggal_diagnosa }}"></span>
+                    </p>
+                    <p>
+                      <strong
+                        >LambungHealth<sup>+</sup> at Klinik Alyssa
+                        Medika</strong
+                      >
+                    </p>
                   </div>
                 </div>
-                <hr>
+                <hr />
               </div>
-      
+
               <!-- Symptoms Section -->
               <div class="content">
-                <h2 class="title is-4"><i class="fas fa-notes-medical"></i> Gejala yang dialami:</h2>
+                <h2 class="title is-4">
+                  <i class="fas fa-notes-medical"></i> Gejala yang dialami:
+                </h2>
                 <ul class="content">
                   {% for gejala in gejala_dialami %}
                   <li class="has-text-warning">
@@ -151,35 +171,60 @@
                   </li>
                   {% endfor %}
                 </ul>
-                <hr>
+                <hr />
               </div>
-      
+
               <!-- Diagnosis Results -->
               <div class="content">
-                <h2 class="title is-4"><i class="fas fa-heartbeat"></i> Hasil Diagnosa</h2>
+                <h2 class="title is-4">
+                  <i class="fas fa-heartbeat"></i> Hasil Diagnosa
+                </h2>
                 <div class="box has-background-light">
-                  <p><strong>Penyakit:</strong> <span class="has-text-danger">{{ diagnosa.hasil_diagnosa.penyakit }}</span></p>
+                  <p>
+                    <strong>Penyakit:</strong>
+                    <span class="has-text-danger"
+                      >{{ diagnosa.hasil_diagnosa.penyakit }}</span
+                    >
+                  </p>
                   <p><strong>Anjuran:</strong></p>
-                  <div class="content has-text-justified has-background-white p-3">
+                  <div
+                    class="content has-text-justified has-background-white p-3"
+                  >
                     {{ diagnosa.hasil_diagnosa.anjuran }}
                   </div>
                 </div>
               </div>
 
               <div class="has-text-centered mt-4">
-                <a href="/cetak-pdf?id={{ diagnosa._id }}" class="button is-link is-medium" target="_blank">
+                <a
+                  href="/cetak-pdf?id={{ diagnosa._id }}"
+                  class="button is-link is-medium"
+                  target="_blank"
+                >
                   <span>Cetak</span>
                   <span class="icon">
                     <i class="fas fa-file-pdf"></i>
                   </span>
                 </a>
               </div>
-      
             </div>
           </div>
         </div>
       </section>
     </div>
+    <script>
+      // Format tanggal di semua elemen dengan class 'tanggal-diagnosa'
+      document
+        .querySelectorAll(".tanggal-diagnosa")
+        .forEach(function (element) {
+          var isoDate = element.getAttribute("data-tanggal"); // Ambil tanggal ISO dari atribut data-tanggal
+          if (isoDate) {
+            var date = new Date(isoDate); // Membuat objek Date dari string ISO
+            var formattedDate = date.toISOString().split("T")[0]; // Format menjadi YYYY-MM-DD
+            element.textContent = formattedDate; // Set tanggal yang sudah diformat di konten elemen
+          }
+        });
+    </script>
     {% include 'footerUser.html' %}
   </body>
 </html>

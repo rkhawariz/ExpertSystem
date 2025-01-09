@@ -73,7 +73,7 @@
             <tbody id="penyakitTableBody">
               {% for d in diagnosaList %}
               <tr data-id="{{ d._id }}">
-                <td>{{ d.tanggal_diagnosa }}</td>
+                <td class="tanggal-diagnosa" data-tanggal="{{ d.tanggal_diagnosa }}">{{ d.tanggal_diagnosa }}</td>
                 <td>{{ d.user_age }}</td>
                 <td>{{ d.user_name }}</td>
                 <td>{{ d.user_gender }}</td>
@@ -125,6 +125,18 @@
       </div>
     </div>
     <script>
+      // Format tanggal di semua elemen dengan class 'tanggal-diagnosa'
+      document
+        .querySelectorAll(".tanggal-diagnosa")
+        .forEach(function (element) {
+          var isoDate = element.getAttribute("data-tanggal"); // Ambil tanggal ISO dari atribut data-tanggal
+          if (isoDate) {
+            var date = new Date(isoDate); // Membuat objek Date dari string ISO
+            var formattedDate = date.toISOString().split("T")[0]; // Format menjadi YYYY-MM-DD
+            element.textContent = formattedDate; // Set tanggal yang sudah diformat di konten elemen
+          }
+        });
+
       function showDetail(id) {
         fetch(`/diagnosaDetail?id=${id}`)
           .then((response) => response.text())
