@@ -17,6 +17,12 @@
     <script src="../static/script.js"></script>
     <link href="../static/style.css" rel="stylesheet" />
     <title>About Us - LambungHealth+</title>
+    <style>
+      .indented-text {
+        text-indent: 4em;
+        line-height: 1.8;
+      }
+    </style>
   </head>
   <body>
     <!-- navbar -->
@@ -49,7 +55,6 @@
       <div id="navbarBasicExample" class="navbar-menu">
         <div class="navbar-start navbar-center">
           <a class="navbar-item home" href="/">Home</a>
-          <a class="navbar-item" href="/artikel">Artikel</a>
           <a class="navbar-item" href="/about">About Us</a>
           {% if logged_in %} {% if is_admin %}
           <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
@@ -86,11 +91,8 @@
                 </div>
                 <div class="dropdown-menu" id="dropdown-menu" role="menu">
                   <div class="dropdown-content">
-                    <a href="/riwayatDiagnosa" class="dropdown-item">
-                      Riwayat Diagnosa
-                    </a>
                     <a href="/editProfilPasien" class="dropdown-item">
-                      Edit Profil
+                      Lihat Profil
                     </a>
                   </div>
                 </div>
@@ -106,17 +108,91 @@
       </div>
     </nav>
     <!-- navbar end -->
-     
-    <div class="content-main">
-      <section class="hero is-success is-halfheight">
-        <div class="hero-body">
-          <div class="">
-            <p class="title">About Us</p>
-            <p class="subtitle">Half height subtitle</p>
+
+    <section class="section has-background-light" id="about">
+      <div class="container">
+        <!-- Header -->
+        <div class="has-text-centered">
+          <h1 class="title is-3">About Us</h1>
+          <br />
+
+          <h3 class="subtitle is-6 has-text-grey is-italic">
+            Selamat datang di LambungHealth<sup>+</sup>, solusi terbaik untuk
+            mendiagnosa kesehatan lambung Anda secara mudah dan cepat!
+          </h3>
+        </div>
+
+        <!-- Header End -->
+
+        <!-- About Content -->
+        <div class="columns is-vcentered mt-1 p-6">
+          <!-- Image on the right -->
+          <div class="column is-half">
+            <figure class="image is-4by3">
+              <img
+                src="../static/img/vectorAbout.png"
+                alt="About LambungHealth+"
+              />
+            </figure>
+          </div>
+          <!-- Text on the left -->
+          <div class="column is-half">
+            <p
+              class="content is-size-6 has-text-justified indented-text"
+              style="line-height: 1.8"
+            >
+              LambungHealth+ adalah website berbasis sistem pakar yang dirancang
+              untuk membantu Anda mengenali berbagai gangguan lambung melalui
+              diagnosa yang akurat dan terpercaya. Website ini hadir sebagai
+              solusi inovatif dalam memberikan informasi yang relevan serta
+              edukasi kesehatan lambung. Dengan fitur yang ramah pengguna, kami
+              memastikan Anda dapat memeriksa gejala dengan mudah dan
+              mendapatkan hasil yang cepat. LambungHealth+ dikembangkan melalui kolaborasi dengan
+              <strong>Klinik Alyssa Medika</strong>, salah satu fasilitas
+              kesehatan terpercaya. Kolaborasi ini bertujuan untuk memastikan
+              hasil diagnosa yang dihasilkan website kami didukung oleh keahlian
+              profesional medis, memberikan solusi kesehatan lambung yang akurat
+              dan berkualitas kepada masyarakat.
+            </p>
           </div>
         </div>
-      </section>
-    </div>
+        <!-- About Content End -->
+    </section>
+
+    <section class="section" id="about-alyssa">
+      <div class="container">
+        <div class="content has-text-centered">
+          <!-- Judul Section -->
+          <h1 class="title is-3 has-text-centered is-light">Tentang Klinik Alyssa Medika</h1>
+          <br>
+          <p class="subtitle is-6 has-text-grey is-italic">
+            Memberikan pelayanan kesehatan holistik dengan sepenuh jiwa.
+          </p>
+        </div>
+    
+        <div class="columns is-centered">
+          <!-- Konten Utama -->
+          <div class="column is-two-thirds">
+            <div class="box has-background-light">
+              <p class="is-size-6 has-text-justified" style="text-indent: 1.5em; line-height: 1.8;">
+                Klinik Alyssa Medika saat ini memiliki tim profesional yang terdiri dari Dokter Umum, Dokter Gigi, Apoteker, Perawat, dan Bidan. Kami memberikan pelayanan kesehatan holistik yang mencakup poliklinik umum, poliklinik gigi, kesehatan ibu dan anak (KIA), poliklinik kesehatan jiwa, laboratorium kesehatan (jejaring), instalasi farmasi, serta layanan persalinan 24 jam. Selain itu, kami telah bekerja sama dengan BPJS Kesehatan untuk melayani peserta JKN-KIS.
+              </p>
+              <p class="is-size-6 has-text-justified mt-4" style="text-indent: 1.5em; line-height: 1.8;">
+                Klinik Alyssa Medika hadir di tengah masyarakat dengan semangat memberikan pelayanan kesehatan sepenuh jiwa. Kami mengadopsi konsep pelayanan holistik melalui pendekatan Bio-Psiko-Sosial untuk memastikan setiap pasien mendapatkan pelayanan optimal, kenyamanan, dan kepuasan dalam setiap kunjungan kesehatan.
+              </p>
+            </div>
+    
+            <!-- Call-to-Action -->
+            <div class="has-text-centered mt-4">
+              <a target="_blank" href="https://klinikalyssamedika.com/" class="button myButton">
+                Lihat Layanan Kami
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
     {% include 'footerUser.html' %}
   </body>
 </html>

@@ -333,3 +333,9 @@ br {
   color: #40513b;
   font-weight: bold;
 }
+
+[data-aos] {
+  position: relative;
+  display: block;
+  margin: 0 auto;
+}

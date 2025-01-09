@@ -63,7 +63,6 @@
       <div id="navbarBasicExample" class="navbar-menu">
         <div class="navbar-start navbar-center">
           <a class="navbar-item home" href="/">Home</a>
-          <a class="navbar-item" href="/artikel">Artikel</a>
           <a class="navbar-item" href="/about">About Us</a>
           {% if logged_in %} {% if is_admin %}
           <a class="navbar-item" href="/berandaAdmin">Dashboard</a>
@@ -100,11 +99,8 @@
                 </div>
                 <div class="dropdown-menu" id="dropdown-menu" role="menu">
                   <div class="dropdown-content">
-                    <a href="/riwayatDiagnosa" class="dropdown-item">
-                      Riwayat Diagnosa
-                    </a>
                     <a href="/editProfilPasien" class="dropdown-item">
-                      Edit Profil
+                      Lihat Profil
                     </a>
                   </div>
                 </div>
@@ -285,20 +281,6 @@
       </div>
     </section>
 
-    <div class="content-main">
-      <section
-        style="margin-bottom: 2rem"
-        class="hero is-success is-halfheight"
-      >
-        <div class="hero-body">
-          <div class="">
-            <p class="title">Home</p>
-            <a href="/berandaAdmin">Dashboard</a>
-            <p class="subtitle">Half height subtitle</p>
-          </div>
-        </div>
-      </section>
-    </div>
     {% include 'footerUser.html' %}
 
     <script
