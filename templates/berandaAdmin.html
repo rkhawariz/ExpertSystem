@@ -14,7 +14,6 @@
       type="image/x-icon"
       href="../static/img/LH+Logo.png"
     />
-    <!-- Custom fonts for this template-->
     <link
       href="../static/vendor/fontawesome-free/css/all.min.css"
       rel="stylesheet"
@@ -25,10 +24,8 @@
       rel="stylesheet"
     />
 
-    <!-- Custom styles for this template-->
     <link href="../static/css/sb-admin-2.css" rel="stylesheet" />
 
-    <!-- Font Awesome icons (free version)-->
     <script
       src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
       crossorigin="anonymous"
@@ -44,7 +41,6 @@
       <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
     </div>
 
-    <!-- Content Row -->
     <div class="row">
       <!-- Daftar Penyakit Card -->
       <div class="col-xl-3 col-md-6 mb-4">
@@ -155,7 +151,6 @@
       </div>
     </div>
 
-    <!-- Content Row -->
 
     <div class="row d-flex align-items-stretch">
       <!-- Statistik Diagnosa -->
@@ -252,7 +247,6 @@
                   const penyakitLabels = {{ penyakit_labels | tojson }};
         const penyakitData = {{ penyakit_data | tojson }};
 
-        // Konfigurasi Pie Chart
         const ctx = document.getElementById('pieChartPenyakit').getContext('2d');
 new Chart(ctx, {
   type: 'pie',
@@ -261,20 +255,20 @@ new Chart(ctx, {
     datasets: [{
       data: penyakitData,
       backgroundColor: [
-        '#4e73df', // Warna 1
-        '#1cc88a', // Warna 2
-        '#36b9cc', // Warna 3
-        '#f6c23e', // Warna 4
-        '#e74a3b', // Warna 5
-        '#858796', // Warna 6
+        '#4e73df', 
+        '#1cc88a',
+        '#36b9cc', 
+        '#f6c23e', 
+        '#e74a3b',
+        '#858796', 
       ],
       hoverBackgroundColor: [
-        '#2e59d9', // Warna hover 1
-        '#17a673', // Warna hover 2
-        '#2c9faf', // Warna hover 3
-        '#f4b619', // Warna hover 4
-        '#e02d1b', // Warna hover 5
-        '#6c757d', // Warna hover 6
+        '#2e59d9',
+        '#17a673', 
+        '#2c9faf', 
+        '#f4b619',
+        '#e02d1b', 
+        '#6c757d',
       ],
       hoverBorderColor: 'rgba(234, 236, 244, 1)',
     }],
@@ -285,10 +279,10 @@ new Chart(ctx, {
         display: true,
         position: 'bottom',
         labels: {
-          usePointStyle: true,  // Ini akan membuat titik warna pada legend
-          pointStyle: 'circle', // Ganti bar menjadi titik
-          boxWidth: 10,          // Mengatur ukuran titik
-          padding: 15            // Menambahkan jarak antara titik dan teks
+          usePointStyle: true,  
+          pointStyle: 'circle', 
+          boxWidth: 10,       
+          padding: 15          
         }
       },
       tooltip: {

@@ -155,7 +155,7 @@ def about():
 
 @app.route('/halamanDiagnosa', methods=['GET'])
 def halamanDiagnosa():
-    token_receive = request.cookies.get(TOKEN_KEY)  # Ambil token dari cookie
+    token_receive = request.cookies.get(TOKEN_KEY) 
     if not token_receive:
         return render_template('halamanDiagnosa.html', msg="Token tidak ditemukan. Silakan login kembali.")
     
@@ -182,7 +182,6 @@ def get_gejala_diagnosa():
     return jsonify({"gejalaList": gejalaList}), 200
 
 def inference_engine(jawaban):
-    # print("Jawaban diterima oleh inference_engine:", jawaban)
     rules = list(db.rules.find())
     fakta = {item['kode_gejala']: item['answer'] for item in jawaban}
 
@@ -241,11 +240,10 @@ def hasil_diagnosa():
         return "ID diagnosa tidak ditemukan", 400
 
     try:
-        token_receive = request.cookies.get(TOKEN_KEY)  # Ambil token dari cookie
+        token_receive = request.cookies.get(TOKEN_KEY) 
         if not token_receive:
             return redirect(url_for('login', msg="Silakan login terlebih dahulu."))
 
-        # Decode token
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=["HS256"])
         user_info = db.users.find_one({"email": payload["id"]})
         if not user_info:
@@ -254,7 +252,6 @@ def hasil_diagnosa():
         is_admin = user_info.get("category") == "admin"
         logged_in = True
 
-        # Temukan diagnosa berdasarkan ID
         diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
         if not diagnosa:
             return "Diagnosa tidak ditemukan", 404
@@ -262,14 +259,13 @@ def hasil_diagnosa():
         gejala_list = list(db.gejala.find())
         
         gejala_dialami = [
-            gejala["gejala"]  # Ambil deskripsi gejala
+            gejala["gejala"] 
             for jawaban in diagnosa["jawaban"]
-            if jawaban["answer"] == "Ya"  # Jawaban "Ya"
+            if jawaban["answer"] == "Ya"
             for gejala in gejala_list
-            if gejala["kode_gejala"] == jawaban["kode_gejala"]  # Kode cocok
+            if gejala["kode_gejala"] == jawaban["kode_gejala"]
         ]
 
-        # Render halaman hasil diagnosa dengan informasi pengguna
         return render_template(
             'hasilDiagnosa.html',
             diagnosa=diagnosa,
@@ -284,40 +280,6 @@ def hasil_diagnosa():
         return redirect(url_for('login', msg="Token tidak valid."))
     except Exception as e:
         return f"Terjadi kesalahan: {e}", 500
-    
-# @app.route('/cetak-pdf', methods=['GET'])
-# def cetak_pdf():
-#     diagnosa_id = request.args.get('id')
-#     if not diagnosa_id:
-#         return "ID diagnosa tidak ditemukan", 400
-
-#     diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
-#     if not diagnosa:
-#         return "Diagnosa tidak ditemukan", 404
-
-#     # Gejala yang dialami
-#     gejala_dialami = []
-#     for item in diagnosa["jawaban"]:
-#         if item["answer"] == "Ya":
-#             gejala_data = db.gejala.find_one({"kode_gejala": item["kode_gejala"]})
-#             if gejala_data and "gejala" in gejala_data:
-#                 gejala_dialami.append(gejala_data["gejala"])
-
-#     # Render hasil template ke dalam PDF
-#     html_template = render_template(
-#         "hasilDiagnosa.html", diagnosa=diagnosa, gejala_dialami=gejala_dialami
-#     )
-
-#     try:
-#         pdf = HTML(string=html_template).write_pdf()
-#     except Exception as e:
-#         return f"Error saat menghasilkan PDF: {str(e)}", 500
-
-#     response = make_response(pdf)
-#     response.headers["Content-Type"] = "application/pdf"
-#     response.headers["Content-Disposition"] = f"attachment; filename=hasil_diagnosa_{diagnosa_id}.pdf"
-#     return response
-
 
 @app.route('/cetak-pdf', methods=['GET'])
 def cetak_pdf():
@@ -334,7 +296,6 @@ def cetak_pdf():
         if gejala['answer'] == 'Ya':
             gejala_dialami.append(gejala['kode_gejala'])
 
-    # HTML template yang sama seperti di halaman web
     html_template = f"""
 <html>
 <head>
@@ -490,19 +451,15 @@ def editProfilPasien():
         is_admin = user_info.get("category") == "admin"
         logged_in = True
 
-        # Mengambil riwayat diagnosa pasien berdasarkan ID user
         riwayat = list(db.diagnosa.find({"user_email": user_info["email"]}))
         riwayatList = []
         for diagnosa in riwayat:
                 tanggal_diagnosa = diagnosa["tanggal_diagnosa"]
-                # Format tanggal menjadi YYYY-MM-DD
                 tanggal_terformat = tanggal_diagnosa.strftime('%Y-%m-%d')
                 riwayatList.append({
                     "tanggal_terformat": tanggal_terformat,
-                    # Anda bisa menambahkan field lain yang ingin ditampilkan
                 })
         
-        # Kirim data ke template
         return render_template(
             'editProfilPasien.html',
             user_info=user_info,
@@ -523,22 +480,18 @@ from werkzeug.security import generate_password_hash
 def update_profile():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        # Decode token to get user information
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        user_email = payload['id']  # Assuming token stores the email
+        user_email = payload['id']  
         
-        # Get updated data from form
         name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Prepare update query
         update_data = {"name": name, "email": email}
         if password:
             hashed_password = hashlib.sha256(password. encode('utf-8')).hexdigest()
             update_data["password"] = hashed_password
 
-        # Update user in the database
         db.users.update_one({"email": user_email}, {"$set": update_data})
 
         return redirect('/editProfilPasien')
@@ -552,22 +505,18 @@ def update_profile():
 def update_profile_admin():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
-        # Decode token to get user information
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        user_email = payload['id']  # Assuming token stores the email
+        user_email = payload['id']
         
-        # Get updated data from form
         name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Prepare update query
         update_data = {"name": name, "email": email}
         if password:
             hashed_password = hashlib.sha256(password. encode('utf-8')).hexdigest()
             update_data["password"] = hashed_password
 
-        # Update user in the database
         db.users.update_one({"email": user_email}, {"$set": update_data})
 
         return redirect('/editProfile')
@@ -596,13 +545,11 @@ def berandaAdmin():
         logged_in = True
 
         if is_admin:
-            # Menghitung total data
             total_penyakit = db.penyakit.count_documents({})
             total_gejala = db.gejala.count_documents({})
             total_diagnosa = db.diagnosa.count_documents({})
             total_users = db.users.count_documents({})
 
-            # Statistik Diagnosa (4 bulan terakhir)
             today = datetime.now()
             four_months_ago = today - timedelta(days=120)
             pipeline = [
@@ -624,19 +571,18 @@ def berandaAdmin():
             penyakit_stats = db.diagnosa.aggregate([
                 {
                     "$group": {
-                        "_id": "$hasil_diagnosa.penyakit",  # Mengelompokkan berdasarkan penyakit
+                        "_id": "$hasil_diagnosa.penyakit", 
                         "count": {"$sum": 1}
                     }
                 }
             ])
 
-            # Format data untuk frontend
             labels = []
             data = []
             for stat in diagnosa_stats:
                 year = stat["_id"]["year"]
                 month = stat["_id"]["month"]
-                month_name = datetime(year, month, 1).strftime("%B %Y")  # Contoh: "November 2024"
+                month_name = datetime(year, month, 1).strftime("%B %Y")
                 labels.append(month_name)
                 data.append(stat["count"])
             
@@ -644,18 +590,18 @@ def berandaAdmin():
             penyakit_data = []
 
             for stat in penyakit_stats:
-                label = stat["_id"]  # Nama penyakit, misalnya "P01 - Radang Lambung"
+                label = stat["_id"]
     
                 if label == "Tidak ada diagnosis yang cocok.":
                     label = "N/A"
                 else:
                     if " - " in label:
-                        label = label.split(" - ", 1)[1]  # Ambil hanya bagian setelah " - "
+                        label = label.split(" - ", 1)[1]
                     if len(label) > 10:
-                        label = label[:10] + "..."  # Potong label dan tambahkan '...'
+                        label = label[:10] + "..."
     
                 penyakit_labels.append(label)
-                penyakit_data.append(stat["count"])  # Jumlah diagnosa
+                penyakit_data.append(stat["count"])
 
             return render_template(
                 "berandaAdmin.html",
@@ -695,7 +641,7 @@ def kelolaDiagnosa():
 
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')
             diagnosaList = list(db.diagnosa.find())
             return render_template(
                 'kelolaDiagnosa.html',
@@ -725,11 +671,11 @@ def diagnosa_detail():
 
         gejala_list = list(db.gejala.find())
         gejala_dialami = [
-            gejala["gejala"]  # Ambil deskripsi gejala
+            gejala["gejala"]
             for jawaban in diagnosa["jawaban"]
-            if jawaban["answer"] == "Ya"  # Jawaban "Ya"
+            if jawaban["answer"] == "Ya"
             for gejala in gejala_list
-            if gejala["kode_gejala"] == jawaban["kode_gejala"]  # Kode cocok
+            if gejala["kode_gejala"] == jawaban["kode_gejala"]
         ]
 
         return render_template(
@@ -769,7 +715,7 @@ def kelolaPenyakit():
 
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')
             penyakit = list(db.penyakit.find().sort("kode_penyakit", -1))
             kode_penyakit_terakhir = penyakit[0]["kode_penyakit"] if penyakit else "P00"
             kode_penyakit_baru = f"P{int(kode_penyakit_terakhir[1:]) + 1:02d}"
@@ -849,10 +795,9 @@ def kelolaGejala():
         is_admin = user_info.get("category") == "admin"
         logged_in = True
 
-        # Jika metode GET, kembalikan halaman dengan data gejala
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden') 
             gejala = list(db.gejala.find().sort("kode_gejala", -1))
             kode_gejala_terakhir = gejala[0]["kode_gejala"] if gejala else "G00"
             kode_gejala_baru = f"G{int(kode_gejala_terakhir[1:]) + 1:02d}"
@@ -877,7 +822,6 @@ def tambahGejalaSave():
     if not data or "gejala" not in data or not data["gejala"]:
         return jsonify({"message": "Data gejala tidak valid."}), 400
 
-    # Menambahkan data ke database
     try:
         kode_gejala = data["kode_gejala"]
         gejala = data["gejala"]
@@ -933,7 +877,7 @@ def kelolaAnjuran():
 
         if request.method == 'GET':
             if not is_admin:
-                return redirect('/forbidden')  # Arahkan ke halaman lain jika bukan admin
+                return redirect('/forbidden')
             anjuran = list(db.anjuran.find().sort("kode_anjuran", -1))
             kode_anjuran_terakhir = anjuran[0]["kode_anjuran"] if anjuran else "A00"
             kode_anjuran_baru = f"A{int(kode_anjuran_terakhir[1:]) + 1:02d}"
@@ -958,7 +902,6 @@ def tambahAnjuranSave():
     if not data or "deskripsiAnjuran" not in data or not data["deskripsiAnjuran"]:
         return jsonify({"message": "Data anjuran tidak valid."}), 400
 
-    # Menambahkan data ke database
     try:
         kode_anjuran = data["kode_anjuran"]
         deskripsiAnjuran = data["deskripsiAnjuran"]
@@ -1136,7 +1079,6 @@ def kelolaUserSave():
         }), 201
 
     except Exception as e:
-        # Menangani error dan mengembalikan pesan error
         return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
 
 @app.route('/kelolaUserDelete/<id>', methods=['DELETE'])
@@ -1157,7 +1099,6 @@ def kelolaUserDelete(id):
 @app.route('/updateUser/<user_id>', methods=['PUT'])
 def updateUser(user_id):
     try:
-        # Log untuk debug
         print(f"User ID yang diterima: {user_id}")
         data = request.get_json()
         print(f"Data yang diterima: {data}")
@@ -1178,16 +1119,13 @@ def updateUser(user_id):
             password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
             updated_data["password"] = password_hash
 
-        # Cek apakah user_id valid
         try:
             user_object_id = ObjectId(user_id)
         except Exception as e:
             return jsonify({"message": "User ID tidak valid."}), 400
 
-        # Update data pengguna di database
         result = db.users.update_one({"_id": user_object_id}, {"$set": updated_data})
 
-        # Cek apakah data ditemukan dan diupdate
         if result.matched_count == 0:
             return jsonify({"message": "Pengguna tidak ditemukan."}), 404
 
@@ -1216,7 +1154,6 @@ def editProfile():
     except jwt.exceptions.DecodeError:
         msg = 'There was a problem logging you in'
     return render_template('editProfile.html', msg=msg)
-
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)

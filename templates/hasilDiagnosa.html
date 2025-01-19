@@ -41,7 +41,6 @@
           <img src="../static/logo.png" alt="" class="title is-4 is-logo" />
         </a>
 
-        <!-- Toggle button for mobile -->
         <a
           role="button"
           class="navbar-burger is-light"
@@ -163,7 +162,6 @@
                 <hr />
               </div>
 
-              <!-- Symptoms Section -->
               <div class="content">
                 <h2 class="title is-4">
                   <i class="fas fa-notes-medical"></i> Gejala yang dialami:
@@ -178,7 +176,6 @@
                 <hr />
               </div>
 
-              <!-- Diagnosis Results -->
               <div class="content">
                 <h2 class="title is-4">
                   <i class="fas fa-heartbeat"></i> Hasil Diagnosa
@@ -221,10 +218,10 @@
       document
         .querySelectorAll(".tanggal-diagnosa")
         .forEach(function (element) {
-          var isoDate = element.getAttribute("data-tanggal"); // Ambil tanggal ISO dari atribut data-tanggal
+          var isoDate = element.getAttribute("data-tanggal"); 
           if (isoDate) {
             var date = new Date(isoDate); // Membuat objek Date dari string ISO
-            var formattedDate = date.toISOString().split("T")[0]; // Format menjadi YYYY-MM-DD
+            var formattedDate = date.toISOString().split("T")[0];
             element.textContent = formattedDate; // Set tanggal yang sudah diformat di konten elemen
           }
         });

@@ -58,19 +58,19 @@
         box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
       }
       .icon-circle {
-        background-color: #ffa500; /* Warna background */
-        color: white; /* Warna ikon */
-        border-radius: 50%; /* Membuat elemen menjadi lingkaran */
+        background-color: #ffa500; 
+        color: white; 
+        border-radius: 50%; 
         width: 60px; /* Tinggi dan lebar harus sama */
         height: 60px;
-        display: flex; /* Untuk sentralisasi ikon */
+        display: flex; 
         justify-content: center;
         align-items: center;
-        margin: 0 auto; /* Memastikan elemen terpusat */
+        margin: 0 auto; 
       }
 
       .modal-content {
-        max-width: 90%; /* Menggunakan 90% lebar layar untuk perangkat kecil */
+        max-width: 90%; 
         margin: auto;
         border-radius: 12px;
         overflow: hidden;
@@ -78,7 +78,7 @@
 
       @media (min-width: 768px) {
         .modal-content {
-          max-width: 500px; /* Untuk perangkat lebih besar, batasi lebar maksimal */
+          max-width: 500px; 
         }
       }
 
@@ -102,20 +102,17 @@
         color: #40513b;
       }
 
-      /* Kontainer tombol */
       .buttons {
         display: flex;
-        gap: 1rem; /* Jarak antar tombol */
-        flex-wrap: wrap; /* Agar tombol tetap responsif */
+        gap: 1rem; 
+        flex-wrap: wrap;
       }
 
-      /* Tombol */
       button {
         min-width: 120px; /* Lebar minimum tombol untuk konsistensi */
         text-align: center;
       }
 
-      /* Responsif untuk layar kecil */
       @media (max-width: 768px) {
         .buttons {
           flex-direction: row; /* Tetap horizontal di layar kecil */
@@ -290,23 +287,6 @@
           </div>
         </div>
       </section>
-
-      <!-- Modal -->
-
-      <!-- <div id="diagnosisModal" class="modal">
-          <div class="modal-background"></div>
-          <div class="modal-content">
-            <div class="box">
-              <p class="title" id="questionTitle">Pertanyaan 1</p>
-              <p id="questionText"></p>
-              <div class="buttons">
-                <button class="button is-success" id="yesBtn">Ya</button>
-                <button class="button is-danger" id="noBtn">Tidak</button>
-              </div>
-            </div>
-          </div>
-          <button class="modal-close is-large" aria-label="close"></button>
-        </div> -->
     </div>
 
     <div id="diagnosisModal" class="modal">
@@ -351,13 +331,12 @@
       let currentQuestion = 0;
       let answers = [];
 
-      // Fetch questions from server
       function fetchQuestions() {
         return $.ajax({
           url: "/get-gejala-diagnosa",
           method: "GET",
           success: function (response) {
-            console.log("Response from server:", response); // Debug respons server
+            console.log("Response from server:", response);
             gejalaList = response.gejalaList; // Ambil daftar gejala dari respons
           },
           error: function (xhr, status, error) {
@@ -375,7 +354,6 @@
         });
       }
 
-      // Start diagnosis process
       $("#startDiagnosisBtn").on("click", async function () {
         try {
           await fetchQuestions();
@@ -390,7 +368,6 @@
         }
       });
 
-      // Update modal with the current question
       function updateQuestion() {
         if (currentQuestion < gejalaList.length) {
           $("#questionTitle").text(`Pertanyaan ${currentQuestion + 1}`);
@@ -403,7 +380,6 @@
         }
       }
 
-      // Handle Yes/No Answer
       $("#yesBtn").on("click", function () {
         answers.push({
           kode_gejala: gejalaList[currentQuestion].kode_gejala,
@@ -422,12 +398,10 @@
         updateQuestion();
       });
 
-      // Close Modal
       $(".modal-close").on("click", function () {
         $("#diagnosisModal").removeClass("is-active");
       });
 
-      // Submit answers to the server
       function submitDiagnosa() {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -439,7 +413,7 @@
           return;
         }
 
-        console.log("Jawaban yang dikirim:", answers); // Debug log
+        console.log("Jawaban yang dikirim:", answers);
         $.ajax({
           url: "/save-diagnosa",
           method: "POST",
@@ -473,7 +447,7 @@
         };
 
         window.addEventListener("resize", adjustModalForScreen);
-        adjustModalForScreen(); // Call on load
+        adjustModalForScreen();
       });
     </script>
     {% include 'footerUser.html' %}

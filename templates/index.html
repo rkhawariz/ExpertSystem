@@ -35,6 +35,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="../static/style.css" rel="stylesheet" />
     <title>LambungHealth - Sistem Pakar</title>
+    <style>
+      
+    </style>
   </head>
 
   <body>
@@ -294,6 +297,12 @@
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
     <script>
       AOS.init();
+      AOS.init({
+  disable: 'mobile', // Nonaktifkan di perangkat mobile
+  duration: 800,     // Durasi animasi
+  once: true         // Animasi hanya berjalan sekali
+});
+
     </script>
   </body>
 </html>
