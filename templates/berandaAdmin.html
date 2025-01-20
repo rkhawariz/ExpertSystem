@@ -184,6 +184,30 @@
           </div>
         </div>
       </div>
+      <div class="col-xl-5 col-lg-4 d-flex">
+        <div class="card shadow mb-4 w-100">
+          <div class="card-header py-3">
+            <h6 style="color: #41513b" class="m-0 font-weight-bold">
+              Statistik Diagnosa Berdasarkan Jenis Kelamin
+            </h6>
+          </div>
+          <div class="card-body">
+            <canvas id="genderChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-7 col-lg-2 d-flex">
+        <div class="card shadow mb-4 w-100">
+          <div class="card-header py-3">
+            <h6 style="color: #41513b" class="m-0 font-weight-bold">
+              Statistik Usia Pasien Terdiagnosa
+            </h6>
+          </div>
+          <div class="card-body">
+            <canvas id="usiaChart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
     
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -298,6 +322,65 @@ new Chart(ctx, {
   }
 });
 
+    const usiaLabels = {{ usia_labels|tojson }};
+    const usiaData = {{ usia_data|tojson }};
+
+    const usiaCtx = document.getElementById('usiaChart').getContext('2d');
+    new Chart(usiaCtx, {
+        type: 'bar',
+        data: {
+            labels: usiaLabels,
+            datasets: [{
+                label: 'Distribusi Usia Pasien',
+                data: usiaData,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    const genderChart = new Chart(genderCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ gender_labels|tojson }},
+            datasets: [{
+                label: 'Jumlah Diagnosa',
+                data: {{ gender_data|tojson }},
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true
+                }
+            }
+        }
+    });
       </script>
       {% endblock %}
     </div>

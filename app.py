@@ -96,43 +96,29 @@ def login_save():
 def register():
     return render_template('register.html')
   
-@app.route('/register/save', methods = ['POST'])
+@app.route('/register/save', methods=['POST'])
 def register_save():
     name = request.form.get('name')
     age = request.form.get('age')
     gender = request.form.get('gender')
     email = request.form.get('email')
     password = request.form.get('password')
-    password_hash = hashlib.sha256(password. encode('utf-8')).hexdigest()
+    
+    existing_user = db.users.find_one({'email': email})
+    if existing_user:
+        return jsonify({'result': 'error', 'message': 'Email sudah terdaftar.'})
+    
+    password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
     doc = {
-        "name" : name,
-        "age" : age,
-        "gender" : gender,
-        "email" : email,
-        "category" : 'pasien',
-        "password" : password_hash                                          
+        "name": name,
+        "age": age,
+        "gender": gender,
+        "email": email,
+        "category": 'pasien',
+        "password": password_hash
     }
     db.users.insert_one(doc)
     return jsonify({'result': 'success'})
-  
-@app.route('/artikel')
-def artikel():
-    token_receive = request.cookies.get(TOKEN_KEY)
-    try:
-        payload =jwt.decode(
-            token_receive,
-            SECRET_KEY,
-            algorithms=['HS256']
-        )
-        user_info = db.users.find_one({"email": payload["id"]})
-        is_admin = user_info.get("category") == "admin"
-        logged_in = True
-        return render_template('artikel.html', user_info=user_info, logged_in = logged_in, is_admin = is_admin)
-    except jwt.ExpiredSignatureError:
-        msg = 'Your token has expired'
-    except jwt.exceptions.DecodeError:
-        msg = 'There was a problem logging you in'
-    return render_template('artikel.html', msg=msg)
 
 @app.route('/about')
 def about():
@@ -174,7 +160,6 @@ def halamanDiagnosa():
         return render_template('halamanDiagnosa.html', msg="Sesi login Anda telah berakhir. Silakan login kembali.")
     except jwt.exceptions.DecodeError:
         return render_template('halamanDiagnosa.html', msg="Token tidak valid. Silakan login kembali.")
-
 
 @app.route('/get-gejala-diagnosa', methods=['GET'])
 def get_gejala_diagnosa():
@@ -531,6 +516,100 @@ def forbidden():
     return render_template('forbidden.html')
 
 
+# @app.route('/berandaAdmin', methods=["GET"])
+# def berandaAdmin():
+#     token_receive = request.cookies.get(TOKEN_KEY)
+#     try:
+#         payload = jwt.decode(
+#             token_receive,
+#             SECRET_KEY,
+#             algorithms=['HS256']
+#         )
+#         user_info = db.users.find_one({"email": payload["id"]})
+#         is_admin = user_info.get("category") == "admin"
+#         logged_in = True
+
+#         if is_admin:
+#             total_penyakit = db.penyakit.count_documents({})
+#             total_gejala = db.gejala.count_documents({})
+#             total_diagnosa = db.diagnosa.count_documents({})
+#             total_users = db.users.count_documents({})
+
+#             today = datetime.now()
+#             four_months_ago = today - timedelta(days=120)
+#             pipeline = [
+#             {"$match": {"tanggal_diagnosa": {"$gte": four_months_ago}}},
+#                 {
+#                     "$group": {
+#                         "_id": {
+#                             "year": {"$year": "$tanggal_diagnosa"},
+#                             "month": {"$month": "$tanggal_diagnosa"}
+#                         },
+#                         "count": {"$sum": 1}
+#                         }
+#                 },
+#                         {"$sort": {"_id.year": 1, "_id.month": 1}}
+#                         ]
+
+#             diagnosa_stats = list(db.diagnosa.aggregate(pipeline))
+            
+#             penyakit_stats = db.diagnosa.aggregate([
+#                 {
+#                     "$group": {
+#                         "_id": "$hasil_diagnosa.penyakit", 
+#                         "count": {"$sum": 1}
+#                     }
+#                 }
+#             ])
+
+#             labels = []
+#             data = []
+#             for stat in diagnosa_stats:
+#                 year = stat["_id"]["year"]
+#                 month = stat["_id"]["month"]
+#                 month_name = datetime(year, month, 1).strftime("%B %Y")
+#                 labels.append(month_name)
+#                 data.append(stat["count"])
+            
+#             penyakit_labels = []
+#             penyakit_data = []
+
+#             for stat in penyakit_stats:
+#                 label = stat["_id"]
+    
+#                 if label == "Tidak ada diagnosis yang cocok.":
+#                     label = "N/A"
+#                 else:
+#                     if " - " in label:
+#                         label = label.split(" - ", 1)[1]
+#                     if len(label) > 10:
+#                         label = label[:10] + "..."
+    
+#                 penyakit_labels.append(label)
+#                 penyakit_data.append(stat["count"])
+
+#             return render_template(
+#                 "berandaAdmin.html",
+#                 user_info=user_info,
+#                 logged_in=logged_in,
+#                 is_admin=is_admin,
+#                 total_penyakit=total_penyakit,
+#                 total_gejala=total_gejala,
+#                 total_diagnosa=total_diagnosa,
+#                 total_users=total_users,
+#                 labels=labels,
+#                 data=data,
+#                 penyakit_labels=penyakit_labels,
+#                 penyakit_data=penyakit_data
+#             )
+#         else:
+#             return redirect('/forbidden')
+#     except jwt.ExpiredSignatureError:
+#         msg = 'Your token has expired'
+#     except jwt.exceptions.DecodeError:
+#         msg = 'There was a problem logging you in'
+#     return render_template('berandaAdmin.html', msg=msg)
+
 @app.route('/berandaAdmin', methods=["GET"])
 def berandaAdmin():
     token_receive = request.cookies.get(TOKEN_KEY)
@@ -553,7 +632,7 @@ def berandaAdmin():
             today = datetime.now()
             four_months_ago = today - timedelta(days=120)
             pipeline = [
-            {"$match": {"tanggal_diagnosa": {"$gte": four_months_ago}}},
+                {"$match": {"tanggal_diagnosa": {"$gte": four_months_ago}}},
                 {
                     "$group": {
                         "_id": {
@@ -561,10 +640,10 @@ def berandaAdmin():
                             "month": {"$month": "$tanggal_diagnosa"}
                         },
                         "count": {"$sum": 1}
-                        }
+                    }
                 },
-                        {"$sort": {"_id.year": 1, "_id.month": 1}}
-                        ]
+                {"$sort": {"_id.year": 1, "_id.month": 1}}
+            ]
 
             diagnosa_stats = list(db.diagnosa.aggregate(pipeline))
             
@@ -575,6 +654,22 @@ def berandaAdmin():
                         "count": {"$sum": 1}
                     }
                 }
+            ])
+
+            # Statistik usia
+            usia_stats = db.diagnosa.aggregate([
+                {
+                    "$match": {
+                        "hasil_diagnosa.penyakit": {"$ne": "Tidak ada diagnosis yang cocok."}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$user_age",
+                        "count": {"$sum": 1}
+                    }
+                },
+                {"$sort": {"_id": 1}}
             ])
 
             labels = []
@@ -603,6 +698,37 @@ def berandaAdmin():
                 penyakit_labels.append(label)
                 penyakit_data.append(stat["count"])
 
+            # Statistik usia
+            usia_labels = []
+            usia_data = []
+
+            for stat in usia_stats:
+                usia_labels.append(stat["_id"])
+                usia_data.append(stat["count"])
+                
+            # gender
+            gender_stats = list(db.diagnosa.aggregate([
+                {
+                    "$match": {
+                        "hasil_diagnosa.penyakit": {"$ne": "Tidak ada diagnosis yang cocok."}
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$user_gender",
+                        "count": {"$sum": 1}
+                    }
+                },
+                {"$sort": {"_id": 1}}
+            ]))
+            gender_labels = []
+            gender_data = []
+
+            for stat in gender_stats:
+                gender_labels.append(stat["_id"])
+                gender_data.append(stat["count"])
+
+
             return render_template(
                 "berandaAdmin.html",
                 user_info=user_info,
@@ -615,7 +741,11 @@ def berandaAdmin():
                 labels=labels,
                 data=data,
                 penyakit_labels=penyakit_labels,
-                penyakit_data=penyakit_data
+                penyakit_data=penyakit_data,
+                usia_labels=usia_labels,
+                usia_data=usia_data,
+                gender_labels=gender_labels,
+                gender_data=gender_data
             )
         else:
             return redirect('/forbidden')

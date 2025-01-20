@@ -51,20 +51,33 @@ function signup() {
         password: password,
       },
       success: function (response) {
-        Swal.fire({
-          title: "Done",
-          text: "You are signed up, nice!",
-          icon: "success",
-          showConfirmButton: false,
-        });
+        if (response.result === "error") {
+          Swal.fire("Oops", response.message, "error");
+        } else if (response.result === "success") {
+          Swal.fire({
+            title: "Done",
+            text: "You are signed up, nice!",
+            icon: "success",
+            showConfirmButton: false,
+          });
 
-        setTimeout(function () {
-          window.location.replace("/login");
-        }, 1000);
+          setTimeout(function () {
+            window.location.replace("/login");
+          }, 1000);
+        }
+      },
+      error: function (xhr) {
+        // Tangani error berdasarkan status code
+        if (xhr.status === 400) {
+          Swal.fire("Oops", "Email sudah terdaftar!", "error");
+        } else {
+          Swal.fire("Oops", "Terjadi kesalahan pada server!", "error");
+        }
       },
     });
   }
 }
+
 
 function sign_in() {
   let email = $("#email").val();
