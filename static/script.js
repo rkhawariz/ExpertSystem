@@ -30,15 +30,24 @@ function signup() {
   let gender = $("#gender").val();
   let email = $("#email").val();
   let password = $("#password").val();
+  let confirmPassword = document.getElementById("confirm_password").value;
 
-  if (
-    name == "" ||
-    age == "" ||
-    gender == "" ||
-    email == "" ||
-    password == ""
-  ) {
-    Swal.fire("Oops", "Data tidak lengkap!", "error");
+
+  if (!name || !age || !gender || !email || !password || !confirmPassword) {
+    Swal.fire({
+      icon: "warning",
+      title: "Field Kosong!",
+      text: "Semua field harus diisi!",
+    });
+    return;
+  }
+  if (password !== confirmPassword) {
+    Swal.fire({
+      icon: "error",
+      title: "Password Tidak Cocok!",
+      text: "Password dan Konfirmasi Password tidak cocok!",
+    });
+    return;
   } else {
     $.ajax({
       type: "POST",
@@ -77,7 +86,6 @@ function signup() {
     });
   }
 }
-
 
 function sign_in() {
   let email = $("#email").val();
