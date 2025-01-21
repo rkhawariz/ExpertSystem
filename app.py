@@ -1,17 +1,15 @@
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response, render_template_string
+from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
 
 from datetime import datetime, timedelta
 from bson import ObjectId
-from bson.son import SON
 import hashlib
 import jwt
 from bson.objectid import ObjectId
 
 from pymongo import MongoClient
-import requests
 
 from weasyprint import HTML
 
@@ -514,101 +512,6 @@ def update_profile_admin():
 @app.route('/forbidden')
 def forbidden():
     return render_template('forbidden.html')
-
-
-# @app.route('/berandaAdmin', methods=["GET"])
-# def berandaAdmin():
-#     token_receive = request.cookies.get(TOKEN_KEY)
-#     try:
-#         payload = jwt.decode(
-#             token_receive,
-#             SECRET_KEY,
-#             algorithms=['HS256']
-#         )
-#         user_info = db.users.find_one({"email": payload["id"]})
-#         is_admin = user_info.get("category") == "admin"
-#         logged_in = True
-
-#         if is_admin:
-#             total_penyakit = db.penyakit.count_documents({})
-#             total_gejala = db.gejala.count_documents({})
-#             total_diagnosa = db.diagnosa.count_documents({})
-#             total_users = db.users.count_documents({})
-
-#             today = datetime.now()
-#             four_months_ago = today - timedelta(days=120)
-#             pipeline = [
-#             {"$match": {"tanggal_diagnosa": {"$gte": four_months_ago}}},
-#                 {
-#                     "$group": {
-#                         "_id": {
-#                             "year": {"$year": "$tanggal_diagnosa"},
-#                             "month": {"$month": "$tanggal_diagnosa"}
-#                         },
-#                         "count": {"$sum": 1}
-#                         }
-#                 },
-#                         {"$sort": {"_id.year": 1, "_id.month": 1}}
-#                         ]
-
-#             diagnosa_stats = list(db.diagnosa.aggregate(pipeline))
-            
-#             penyakit_stats = db.diagnosa.aggregate([
-#                 {
-#                     "$group": {
-#                         "_id": "$hasil_diagnosa.penyakit", 
-#                         "count": {"$sum": 1}
-#                     }
-#                 }
-#             ])
-
-#             labels = []
-#             data = []
-#             for stat in diagnosa_stats:
-#                 year = stat["_id"]["year"]
-#                 month = stat["_id"]["month"]
-#                 month_name = datetime(year, month, 1).strftime("%B %Y")
-#                 labels.append(month_name)
-#                 data.append(stat["count"])
-            
-#             penyakit_labels = []
-#             penyakit_data = []
-
-#             for stat in penyakit_stats:
-#                 label = stat["_id"]
-    
-#                 if label == "Tidak ada diagnosis yang cocok.":
-#                     label = "N/A"
-#                 else:
-#                     if " - " in label:
-#                         label = label.split(" - ", 1)[1]
-#                     if len(label) > 10:
-#                         label = label[:10] + "..."
-    
-#                 penyakit_labels.append(label)
-#                 penyakit_data.append(stat["count"])
-
-#             return render_template(
-#                 "berandaAdmin.html",
-#                 user_info=user_info,
-#                 logged_in=logged_in,
-#                 is_admin=is_admin,
-#                 total_penyakit=total_penyakit,
-#                 total_gejala=total_gejala,
-#                 total_diagnosa=total_diagnosa,
-#                 total_users=total_users,
-#                 labels=labels,
-#                 data=data,
-#                 penyakit_labels=penyakit_labels,
-#                 penyakit_data=penyakit_data
-#             )
-#         else:
-#             return redirect('/forbidden')
-#     except jwt.ExpiredSignatureError:
-#         msg = 'Your token has expired'
-#     except jwt.exceptions.DecodeError:
-#         msg = 'There was a problem logging you in'
-#     return render_template('berandaAdmin.html', msg=msg)
 
 @app.route('/berandaAdmin', methods=["GET"])
 def berandaAdmin():
@@ -1117,7 +1020,6 @@ def get_anjuran():
 @app.route("/getRulesData", methods=["GET"])
 def get_rules_data():
     try:
-        # Pipeline agregasi untuk menggabungkan data
         pipeline = [
             {
                 "$lookup": {
@@ -1147,7 +1049,6 @@ def get_rules_data():
 
         rules = list(db.rules.aggregate(pipeline))
 
-        # Pastikan data yang diambil dalam format yang diinginkan
         for rule in rules:
             rule["_id"] = str(rule["_id"])  # Konversi ObjectId ke string
             rule["penyakit_name"] = rule.get("penyakit_data", [{}])[0].get("namaPenyakit", "")
@@ -1161,7 +1062,6 @@ def get_rules_data():
 def add_rule():
     data = request.json
 
-    # Validasi input
     if not all(key in data for key in ["penyakit", "gejala", "anjuran"]):
         return jsonify({"message": "Invalid data format!"}), 400
 
@@ -1173,7 +1073,6 @@ def add_rule():
     if not isinstance(gejala, list):
         return jsonify({"message": "Gejala must be a list!"}), 400
 
-    # Struktur data baru
     rule = {
         "if_gejala": gejala,  # Gejala yang harus terpenuhi
         "then_penyakit": {
@@ -1182,7 +1081,6 @@ def add_rule():
         }
     }
 
-    # Insert rule ke database
     db.rules.insert_one(rule)
     return jsonify({"message": "Rule added successfully!"}), 201
 
@@ -1307,7 +1205,6 @@ def updateUser(user_id):
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
-
     
 @app.route('/editProfile')
 def editProfile():
