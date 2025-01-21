@@ -1072,7 +1072,7 @@ def kelolaAnjuranEdit():
     except Exception as e:
         return jsonify({"message": f"Terjadi kesalahan: {str(e)}"}), 500
 
-@app.route('/kelolaPengetahuan')
+@app.route('/kelolaPengetahuan', methods=["GET"])
 def kelolaPengetahuan():
     token_receive = request.cookies.get(TOKEN_KEY)
     try:
@@ -1113,6 +1113,49 @@ def get_gejala():
 def get_anjuran():
     anjuran = list(db.anjuran.find({}, {"_id": 0}))
     return jsonify(anjuran)
+
+@app.route("/getRulesData", methods=["GET"])
+def get_rules_data():
+    try:
+        # Pipeline agregasi untuk menggabungkan data
+        pipeline = [
+            {
+                "$lookup": {
+                    "from": "penyakit",
+                    "localField": "then_penyakit.penyakit",
+                    "foreignField": "kode_penyakit",
+                    "as": "penyakit_data",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "anjuran",
+                    "localField": "then_penyakit.anjuran",
+                    "foreignField": "kode_anjuran",
+                    "as": "anjuran_data",
+                }
+            },
+            {
+                "$project": {
+                    "if_gejala": 1,
+                    "then_penyakit.penyakit": 1,
+                    "penyakit_data.namaPenyakit": 1,
+                    "anjuran_data.deskripsiAnjuran": 1,
+                }
+            },
+        ]
+
+        rules = list(db.rules.aggregate(pipeline))
+
+        # Pastikan data yang diambil dalam format yang diinginkan
+        for rule in rules:
+            rule["_id"] = str(rule["_id"])  # Konversi ObjectId ke string
+            rule["penyakit_name"] = rule.get("penyakit_data", [{}])[0].get("namaPenyakit", "")
+            rule["anjuran_desc"] = rule.get("anjuran_data", [{}])[0].get("deskripsiAnjuran", "")
+
+        return jsonify(rules)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/addRule", methods=["POST"])
 def add_rule():

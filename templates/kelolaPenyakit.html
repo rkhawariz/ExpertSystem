@@ -256,7 +256,6 @@
 
     <script>
       $(document).ready(function () {
-        // Handle form submission
         $("#formTambahPenyakit").submit(function (e) {
           e.preventDefault();
           let data = {
@@ -339,13 +338,11 @@
         $("#editDefinisi").val(definisi);
       });
 
-      // Simpan perubahan
       $("#saveEditBtn").on("click", function () {
-        let kodePenyakit = $("#editKodePenyakit").val().trim(); // Ambil nilai input
-        let namaPenyakit = $("#editNamaPenyakit").val().trim(); // Ambil nilai input
-        let definisi = $("#editDefinisi").val().trim(); // Ambil nilai input
+        let kodePenyakit = $("#editKodePenyakit").val().trim(); 
+        let namaPenyakit = $("#editNamaPenyakit").val().trim(); 
+        let definisi = $("#editDefinisi").val().trim(); 
 
-        // Periksa apakah data tidak kosong
         if (!kodePenyakit || !namaPenyakit) {
           Swal.fire(
             "Error",

@@ -304,21 +304,18 @@
       }
 
       $(document).on("click", ".edit-btn", function () {
-        let row = $(this).closest("tr"); // Baris yang dipilih
+        let row = $(this).closest("tr");
         let kodeGejala = row.find("td:nth-child(1)").text().trim(); // Kolom 1
         let gejala = row.find("td:nth-child(2)").text().trim(); // Kolom 2
 
-        // Isi data ke dalam modal
         $("#editKodeGejala").val(kodeGejala);
         $("#editGejala").val(gejala);
       });
 
-      // Simpan perubahan
       $("#saveEditBtn").on("click", function () {
         let kodeGejala = $("#editKodeGejala").val().trim(); // Ambil nilai input
-        let gejala = $("#editGejala").val().trim(); // Ambil nilai input
+        let gejala = $("#editGejala").val().trim();
 
-        // Periksa apakah data tidak kosong
         if (!kodeGejala || !gejala) {
           Swal.fire(
             "Error",

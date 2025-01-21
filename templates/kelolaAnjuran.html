@@ -307,17 +307,14 @@
         let kodeAnjuran = row.find("td:nth-child(1)").text().trim(); // Kolom 1
         let deskripsiAnjuran = row.find("td:nth-child(2)").text().trim(); // Kolom 2
 
-        // Isi data ke dalam modal
         $("#editKodeAnjuran").val(kodeAnjuran);
         $("#editDeskripsiAnjuran").val(deskripsiAnjuran);
       });
 
       // Simpan perubahan
       $("#saveEditBtn").on("click", function () {
-        let kodeAnjuran = $("#editKodeAnjuran").val().trim(); // Ambil nilai input
-        let deskripsiAnjuran= $("#editDeskripsiAnjuran").val().trim(); // Ambil nilai input
-
-        // Periksa apakah data tidak kosong
+        let kodeAnjuran = $("#editKodeAnjuran").val().trim(); 
+        let deskripsiAnjuran= $("#editDeskripsiAnjuran").val().trim(); 
         if (!kodeAnjuran || !deskripsiAnjuran) {
           Swal.fire(
             "Error",

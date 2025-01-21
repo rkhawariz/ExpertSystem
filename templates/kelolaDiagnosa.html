@@ -128,21 +128,20 @@
             ></button>
           </div>
           <div class="modal-body" id="detailContent">
-            <!-- Detail akan dimuat di sini melalui AJAX -->
+            <!-- Detail dari AJAX -->
           </div>
         </div>
       </div>
     </div>
     <script>
-      // Format tanggal di semua elemen dengan class 'tanggal-diagnosa'
       document
         .querySelectorAll(".tanggal-diagnosa")
         .forEach(function (element) {
-          var isoDate = element.getAttribute("data-tanggal"); // Ambil tanggal ISO dari atribut data-tanggal
+          var isoDate = element.getAttribute("data-tanggal"); // Ambil tanggal ISO
           if (isoDate) {
-            var date = new Date(isoDate); // Membuat objek Date dari string ISO
-            var formattedDate = date.toISOString().split("T")[0]; // Format menjadi YYYY-MM-DD
-            element.textContent = formattedDate; // Set tanggal yang sudah diformat di konten elemen
+            var date = new Date(isoDate); 
+            var formattedDate = date.toISOString().split("T")[0]; 
+            element.textContent = formattedDate; 
           }
         });
 

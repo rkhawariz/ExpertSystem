@@ -61,7 +61,7 @@
         background-color: #ffa500; 
         color: white; 
         border-radius: 50%; 
-        width: 60px; /* Tinggi dan lebar harus sama */
+        width: 60px; 
         height: 60px;
         display: flex; 
         justify-content: center;
@@ -109,14 +109,14 @@
       }
 
       button {
-        min-width: 120px; /* Lebar minimum tombol untuk konsistensi */
+        min-width: 120px; 
         text-align: center;
       }
 
       @media (max-width: 768px) {
         .buttons {
-          flex-direction: row; /* Tetap horizontal di layar kecil */
-          justify-content: center; /* Ratakan di tengah */
+          flex-direction: row; 
+          justify-content: center; 
         }
       }
     </style>
@@ -327,6 +327,11 @@
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
     <script>
       AOS.init();
+      AOS.init({
+        disable: "mobile",
+        duration: 800,
+        once: true,
+      });
       let gejalaList = [];
       let currentQuestion = 0;
       let answers = [];
@@ -337,7 +342,7 @@
           method: "GET",
           success: function (response) {
             console.log("Response from server:", response);
-            gejalaList = response.gejalaList; // Ambil daftar gejala dari respons
+            gejalaList = response.gejalaList;
           },
           error: function (xhr, status, error) {
             console.error("AJAX Error: ", {
