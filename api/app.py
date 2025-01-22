@@ -146,7 +146,7 @@ def about():
 def halamanDiagnosa():
     token_receive = request.cookies.get(TOKEN_KEY) 
     if not token_receive:
-        return render_template('halamanDiagnosa.html', msg="Token tidak ditemukan. Silakan login kembali.")
+        return render_template('login.html', msg="Untuk melakukan diagnosa, silahkan login atau mendaftar terlebih dahulu.")
     
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
