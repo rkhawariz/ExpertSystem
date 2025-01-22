@@ -11,7 +11,13 @@ from bson.objectid import ObjectId
 
 from pymongo import MongoClient
 
-from weasyprint import HTML
+from io import BytesIO
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -264,139 +270,219 @@ def hasil_diagnosa():
     except Exception as e:
         return f"Terjadi kesalahan: {e}", 500
 
+# @app.route('/cetak-pdf', methods=['GET'])
+# def cetak_pdf():
+#     diagnosa_id = request.args.get('id')
+#     if not diagnosa_id:
+#         return "ID diagnosa tidak ditemukan", 400
+
+#     diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
+#     if not diagnosa:
+#         return "Diagnosa tidak ditemukan", 404
+
+#     gejala_dialami = []
+#     for gejala in diagnosa['jawaban']:
+#         if gejala['answer'] == 'Ya':
+#             gejala_dialami.append(gejala['kode_gejala'])
+
+#     html_template = f"""
+# <html>
+# <head>
+#     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+#     <style>
+#         body {{
+#             font-family: 'Arial', sans-serif;
+#             margin: 0;
+#             padding: 20px;
+#             background-color: #f8f9fa;
+#         }}
+#         .container {{
+#             background: #ffffff;
+#             padding: 20px;
+#             border-radius: 10px;
+#             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+#         }}
+#         .title {{
+#             color: #40513B;
+#             font-size: 28px;
+#             font-weight: bold;
+#         }}
+#         .subtitle {{
+#             color: #6c757d;
+#             font-size: 18px;
+#             margin-bottom: 20px;
+#         }}
+#         .content {{
+#             margin: 20px 0;
+#         }}
+#         .columns {{
+#             display: flex;
+#             justify-content: space-between;
+#         }}
+#         .box {{
+#             border: 1px solid #dee2e6;
+#             border-radius: 5px;
+#             padding: 15px;
+#             margin-top: 15px;
+#         }}
+#         .has-text-warning {{
+#             color: #FFA500;
+#             font-weight: bold;
+#         }}
+#         .has-text-danger {{
+#             color: #DC3545;
+#             font-weight: bold;
+#         }}
+#         .has-text-centered {{
+#             text-align: center;
+#         }}
+#         .divider {{
+#             height: 3px;
+#             background: linear-gradient(to right, #40513B, #6c757d);
+#             border: none;
+#             margin: 20px 0;
+#         }}
+#         .footer {{
+#             text-align: center;
+#             margin-top: 40px;
+#             font-size: 14px;
+#             color: #6c757d;
+#         }}
+#     </style>
+# </head>
+# <body>
+#     <div class="container">
+#         <div class="content has-text-centered">
+#             <h1 class="title">Hasil Diagnosa</h1>
+#             <p class="subtitle">Detail hasil diagnosa dan rekomendasi untuk Anda</p>
+#             <hr class="divider">
+#         </div>
+
+#         <div class="content">
+#             <h2 class="title is-5">Informasi Pasien</h2>
+#             <div class="columns">
+#                 <div class="column">
+#                     <p><strong>Nama Pasien:</strong><br> {diagnosa['user_name']}</p>
+#                     <p><strong>Email:</strong><br> {diagnosa['user_email']}</p>
+#                 </div>
+#                 <div class="column">
+#                     <p><strong>Rentang Usia:</strong><br> {diagnosa['user_age']}</p>
+#                     <p><strong>Jenis Kelamin:</strong><br> {diagnosa['user_gender']}</p>
+#                 </div>
+#                 <div class="column">
+#                     <p><strong>Tanggal Diagnosa:</strong><br> {diagnosa['tanggal_diagnosa']}</p>
+#                     <p><strong>LambungHealth<sup>+</sup> <br> at Klinik Alyssa Medika</strong></p>
+#                 </div>
+#             </div>
+#             <hr class="divider">
+#         </div>
+
+#         <div class="content">
+#             <h2 class="title is-5">Hasil Diagnosa</h2>
+#             <div class="box">
+#                 <p><strong>Penyakit:</strong> <span class="has-text-danger">{diagnosa['hasil_diagnosa']['penyakit']}</span></p>
+#                 <p><strong>Anjuran:</strong></p>
+#                 <div class="content has-text-justified is-small has-background-white p-3">
+#                     {diagnosa['hasil_diagnosa']['anjuran']}
+#                 </div>
+#             </div>
+#         </div>
+
+#         <div class="footer">
+#             <p>© 2025 LambungHealth<sup>+</sup></p>
+#             <p>at Klinik Alyssa Medika</p>
+#         </div>
+#     </div>
+# </body>
+# </html>
+# """
+
+#     try:
+#         pdf = HTML(string=html_template).write_pdf()
+#     except Exception as e:
+#         return f"Error saat menghasilkan PDF: {str(e)}", 500
+
+#     response = make_response(pdf)
+#     response.headers["Content-Type"] = "application/pdf"
+#     response.headers["Content-Disposition"] = f"attachment; filename=hasil_diagnosa_{diagnosa_id}.pdf"
+#     return response
+
 @app.route('/cetak-pdf', methods=['GET'])
 def cetak_pdf():
     diagnosa_id = request.args.get('id')
     if not diagnosa_id:
         return "ID diagnosa tidak ditemukan", 400
 
+    # Cari diagnosa dari database
     diagnosa = db.diagnosa.find_one({"_id": ObjectId(diagnosa_id)})
     if not diagnosa:
         return "Diagnosa tidak ditemukan", 404
 
-    gejala_dialami = []
-    for gejala in diagnosa['jawaban']:
-        if gejala['answer'] == 'Ya':
-            gejala_dialami.append(gejala['kode_gejala'])
+    # Siapkan data
+    gejala_dialami = [
+        gejala['kode_gejala'] for gejala in diagnosa['jawaban'] if gejala['answer'] == 'Ya'
+    ]
 
-    html_template = f"""
-<html>
-<head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
-    <style>
-        body {{
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }}
-        .container {{
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }}
-        .title {{
-            color: #40513B;
-            font-size: 28px;
-            font-weight: bold;
-        }}
-        .subtitle {{
-            color: #6c757d;
-            font-size: 18px;
-            margin-bottom: 20px;
-        }}
-        .content {{
-            margin: 20px 0;
-        }}
-        .columns {{
-            display: flex;
-            justify-content: space-between;
-        }}
-        .box {{
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 15px;
-        }}
-        .has-text-warning {{
-            color: #FFA500;
-            font-weight: bold;
-        }}
-        .has-text-danger {{
-            color: #DC3545;
-            font-weight: bold;
-        }}
-        .has-text-centered {{
-            text-align: center;
-        }}
-        .divider {{
-            height: 3px;
-            background: linear-gradient(to right, #40513B, #6c757d);
-            border: none;
-            margin: 20px 0;
-        }}
-        .footer {{
-            text-align: center;
-            margin-top: 40px;
-            font-size: 14px;
-            color: #6c757d;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="content has-text-centered">
-            <h1 class="title">Hasil Diagnosa</h1>
-            <p class="subtitle">Detail hasil diagnosa dan rekomendasi untuk Anda</p>
-            <hr class="divider">
-        </div>
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
 
-        <div class="content">
-            <h2 class="title is-5">Informasi Pasien</h2>
-            <div class="columns">
-                <div class="column">
-                    <p><strong>Nama Pasien:</strong><br> {diagnosa['user_name']}</p>
-                    <p><strong>Email:</strong><br> {diagnosa['user_email']}</p>
-                </div>
-                <div class="column">
-                    <p><strong>Rentang Usia:</strong><br> {diagnosa['user_age']}</p>
-                    <p><strong>Jenis Kelamin:</strong><br> {diagnosa['user_gender']}</p>
-                </div>
-                <div class="column">
-                    <p><strong>Tanggal Diagnosa:</strong><br> {diagnosa['tanggal_diagnosa']}</p>
-                    <p><strong>LambungHealth<sup>+</sup> <br> at Klinik Alyssa Medika</strong></p>
-                </div>
-            </div>
-            <hr class="divider">
-        </div>
+    # Header
+    elements = []
+    title_style = styles['Heading1']
+    title_style.textColor = colors.HexColor("#40513B")
+    elements.append(Paragraph("Hasil Diagnosa", title_style))
 
-        <div class="content">
-            <h2 class="title is-5">Hasil Diagnosa</h2>
-            <div class="box">
-                <p><strong>Penyakit:</strong> <span class="has-text-danger">{diagnosa['hasil_diagnosa']['penyakit']}</span></p>
-                <p><strong>Anjuran:</strong></p>
-                <div class="content has-text-justified is-small has-background-white p-3">
-                    {diagnosa['hasil_diagnosa']['anjuran']}
-                </div>
-            </div>
-        </div>
+    subtitle_style = styles['Normal']
+    subtitle_style.textColor = colors.HexColor("#6c757d")
+    elements.append(Paragraph("Detail hasil diagnosa dan rekomendasi untuk Anda", subtitle_style))
+    elements.append(Spacer(1, 20))
 
-        <div class="footer">
-            <p>© 2025 LambungHealth<sup>+</sup></p>
-            <p>at Klinik Alyssa Medika</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
+    # Informasi Pasien
+    elements.append(Paragraph("Informasi Pasien", styles['Heading2']))
+    table_data = [
+        ["Nama Pasien:", diagnosa['user_name']],
+        ["Email:", diagnosa['user_email']],
+        ["Rentang Usia:", diagnosa['user_age']],
+        ["Jenis Kelamin:", diagnosa['user_gender']],
+        ["Tanggal Diagnosa:", diagnosa['tanggal_diagnosa']],
+    ]
+    table = Table(table_data, colWidths=[120, 400])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f8f9fa")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor("#40513B")),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor("#ffffff")),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor("#dee2e6")),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 20))
 
-    try:
-        pdf = HTML(string=html_template).write_pdf()
-    except Exception as e:
-        return f"Error saat menghasilkan PDF: {str(e)}", 500
+    # Hasil Diagnosa
+    elements.append(Paragraph("Hasil Diagnosa", styles['Heading2']))
+    elements.append(Paragraph(f"<strong>Penyakit:</strong> <font color='#DC3545'>{diagnosa['hasil_diagnosa']['penyakit']}</font>", styles['Normal']))
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph("<strong>Anjuran:</strong>", styles['Normal']))
+    anjuran_style = styles['Normal']
+    anjuran_style.textColor = colors.HexColor("#000000")
+    elements.append(Paragraph(diagnosa['hasil_diagnosa']['anjuran'], anjuran_style))
+    elements.append(Spacer(1, 20))
 
-    response = make_response(pdf)
+    # Footer
+    footer_style = styles['Normal']
+    footer_style.textColor = colors.HexColor("#6c757d")
+    footer_style.fontSize = 10
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph("© 2025 LambungHealth+ at Klinik Alyssa Medika", footer_style))
+
+    # Bangun PDF
+    pdf.build(elements)
+
+    # Kirim respons PDF
+    buffer.seek(0)
+    response = make_response(buffer.getvalue())
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = f"attachment; filename=hasil_diagnosa_{diagnosa_id}.pdf"
     return response
