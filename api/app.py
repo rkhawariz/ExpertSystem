@@ -177,7 +177,6 @@ def inference_engine(jawaban):
         if all(fakta.get(gejala) == "Ya" for gejala in rule["if_gejala"]):
             penyakit_data = db.penyakit.find_one({"kode_penyakit": rule["then_penyakit"]["penyakit"]})
             anjuran_data = db.anjuran.find_one({"kode_anjuran": rule["then_penyakit"]["anjuran"]})
-            
             return {
                 "penyakit": f"{rule['then_penyakit']['penyakit']} - {penyakit_data['namaPenyakit']}",
                 "anjuran": f"{rule['then_penyakit']['anjuran']} - {anjuran_data['deskripsiAnjuran']}"
@@ -754,18 +753,18 @@ def kelolaDiagnosa():
             algorithms=['HS256']
         )
         user_info = db.users.find_one({"email": payload["id"]})
-        is_admin = user_info.get("category") == "admin"
+        is_dokter = user_info.get("category") == "dokter"
         logged_in = True
 
         if request.method == 'GET':
-            if not is_admin:
+            if not is_dokter:
                 return redirect('/forbidden')
             diagnosaList = list(db.diagnosa.find())
             return render_template(
                 'kelolaDiagnosa.html',
                 user_info=user_info,
                 logged_in=logged_in,
-                is_admin=is_admin,
+                is_dokter=is_dokter,
                 diagnosaList=diagnosaList
             )
     except jwt.ExpiredSignatureError:
